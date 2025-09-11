@@ -1,0 +1,2 @@
+/usr/bin/ar qc libkio_core.a CMakeFiles/kio_core.dir/src/lexer.cpp.o CMakeFiles/kio_core.dir/src/parser.cpp.o CMakeFiles/kio_core.dir/src/interpreter.cpp.o CMakeFiles/kio_core.dir/src/config.cpp.o
+/usr/bin/ranlib libkio_core.a

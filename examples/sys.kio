@@ -1,0 +1,4 @@
+print sys "cpu_model";
+print sys "mem_total_kb";
+print sys "disk_root_kb";
+print sys "os_name";

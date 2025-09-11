@@ -1,0 +1,29 @@
+import thread from "std/thread";
+
+function heavy_computation(n) {
+    let result = 0;
+    for i in range(n) {
+        result = result + math.sqrt(i) * math.sin(i);
+    }
+    return result;
+}
+
+// Sequential execution
+let start = sys("time");
+let seq1 = heavy_computation(1000000);
+let seq2 = heavy_computation(1000000);
+let seq3 = heavy_computation(1000000);
+let sequential_time = sys("time") - start;
+
+// Parallel execution
+start = sys("time");
+parallel {
+    let par1 = heavy_computation(1000000);
+    let par2 = heavy_computation(1000000);
+    let par3 = heavy_computation(1000000);
+}
+let parallel_time = sys("time") - start;
+
+print("Sequential time: " + sequential_time + "ms");
+print("Parallel time: " + parallel_time + "ms");
+print("Speedup: " + (sequential_time / parallel_time) + "x");
