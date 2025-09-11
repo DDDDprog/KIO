@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2025 Dipanjan Dhar
+SPDX-License-Identifier: GPL-3.0-only
+*/
+
 #include "kio/parser.hpp"
 #include <stdexcept>
 
@@ -114,9 +119,30 @@ ExprPtr Parser::assignment() {
     return expr;
 }
 
-ExprPtr Parser::equality() { return comparison(); }
+ExprPtr Parser::equality() {
+    ExprPtr expr = comparison();
+    while (match({TokenType::EQUAL_EQUAL, TokenType::BANG_EQUAL})) {
+        Token op = previous();
+        ExprPtr right = comparison();
+        auto node = std::make_unique<Expr>();
+        node->node = Expr::Binary{std::move(expr), op, std::move(right)};
+        expr = std::move(node);
+    }
+    return expr;
+}
 
-ExprPtr Parser::comparison() { return term(); }
+ExprPtr Parser::comparison() {
+    ExprPtr expr = term();
+    while (match({TokenType::GREATER, TokenType::GREATER_EQUAL,
+                  TokenType::LESS, TokenType::LESS_EQUAL})) {
+        Token op = previous();
+        ExprPtr right = term();
+        auto node = std::make_unique<Expr>();
+        node->node = Expr::Binary{std::move(expr), op, std::move(right)};
+        expr = std::move(node);
+    }
+    return expr;
+}
 
 ExprPtr Parser::term() {
     ExprPtr expr = factor();

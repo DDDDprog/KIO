@@ -4,6 +4,8 @@
   "description": "Language support for KIO programming language",
   "version": "1.0.0",
   "publisher": "kio-project",
+  "author": "Dipanjan Dhar",
+  "license": "GPL-3.0-only",
   "engines": {
     "vscode": "^1.60.0"
   },

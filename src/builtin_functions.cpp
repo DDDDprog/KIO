@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2025 Dipanjan Dhar
+SPDX-License-Identifier: GPL-3.0-only
+*/
+
 #include "kio/builtin_functions.hpp"
 #include <iostream>
 #include <cmath>

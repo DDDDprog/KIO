@@ -1,0 +1,16 @@
+{
+  "$schema": "vscode://schemas/icon-theme",
+  "iconDefinitions": {
+    "kio-file": { "iconPath": "../images/logo.jpg" }
+  },
+  "fileExtensions": {
+    "kio": "kio-file",
+    "ko": "kio-file"
+  },
+  "fileNames": {
+    
+  },
+  "languageIds": {
+    "kio": "kio-file"
+  }
+}

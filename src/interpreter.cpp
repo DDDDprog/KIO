@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2025 Dipanjan Dhar
+SPDX-License-Identifier: GPL-3.0-only
+*/
+
 #include "kio/interpreter.hpp"
 #include <iostream>
 #include <stdexcept>
@@ -6,6 +11,7 @@
 #include <regex>
 #include <sys/statvfs.h>
 #include <chrono>
+#include <cmath>
 #include "kio/lexer.hpp"
 #include "kio/parser.hpp"
 
@@ -76,10 +82,42 @@ Value Interpreter::evaluateBinary(const Expr::Binary &bin) {
                 return std::get<double>(left) + std::get<double>(right);
             if (std::holds_alternative<std::string>(left) && std::holds_alternative<std::string>(right))
                 return std::get<std::string>(left) + std::get<std::string>(right);
-            throw std::runtime_error("Operands must be two numbers or two strings.");
+            // Support number+string and string+number by coercion
+            if (std::holds_alternative<std::string>(left) && std::holds_alternative<double>(right)) {
+                return std::get<std::string>(left) + std::to_string(std::get<double>(right));
+            }
+            if (std::holds_alternative<double>(left) && std::holds_alternative<std::string>(right)) {
+                return std::to_string(std::get<double>(left)) + std::get<std::string>(right);
+            }
+            throw std::runtime_error("Operands must be numbers or strings for '+'.");
         case TokenType::MINUS: return asNumber(left) - asNumber(right);
         case TokenType::STAR: return asNumber(left) * asNumber(right);
         case TokenType::SLASH: return asNumber(left) / asNumber(right);
+        case TokenType::PERCENT: return std::fmod(asNumber(left), asNumber(right));
+        case TokenType::EQUAL_EQUAL: {
+            if (left.index() != right.index()) return 0.0;
+            if (std::holds_alternative<double>(left))
+                return std::get<double>(left) == std::get<double>(right) ? 1.0 : 0.0;
+            if (std::holds_alternative<std::string>(left))
+                return std::get<std::string>(left) == std::get<std::string>(right) ? 1.0 : 0.0;
+            return 1.0; // both monostate
+        }
+        case TokenType::BANG_EQUAL: {
+            if (left.index() != right.index()) return 1.0;
+            if (std::holds_alternative<double>(left))
+                return std::get<double>(left) != std::get<double>(right) ? 1.0 : 0.0;
+            if (std::holds_alternative<std::string>(left))
+                return std::get<std::string>(left) != std::get<std::string>(right) ? 1.0 : 0.0;
+            return 0.0;
+        }
+        case TokenType::GREATER:
+            return asNumber(left) > asNumber(right) ? 1.0 : 0.0;
+        case TokenType::GREATER_EQUAL:
+            return asNumber(left) >= asNumber(right) ? 1.0 : 0.0;
+        case TokenType::LESS:
+            return asNumber(left) < asNumber(right) ? 1.0 : 0.0;
+        case TokenType::LESS_EQUAL:
+            return asNumber(left) <= asNumber(right) ? 1.0 : 0.0;
         default: break;
     }
     return {};

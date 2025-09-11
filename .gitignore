@@ -1,0 +1,64 @@
+# Top-level Git ignore for KIO project
+
+# OS/system
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+.cache/
+*.log
+
+# CMake/build artifacts (main project)
+/build/
+build/
+CMakeCache.txt
+CMakeFiles/
+Testing/
+install_manifest.txt
+cmake_install.cmake
+_make*/
+Makefile
+compile_commands.json
+
+# Object/lib binaries
+*.o
+*.obj
+*.lo
+*.la
+*.a
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.out
+
+# Benchmarks outputs
+BENCHMARKS.md
+/tmp/
+
+# VS Code workspace
+.vscode/
+
+# VS Code extension (vscode-extension/) build outputs
+vscode-extension/node_modules/
+vscode-extension/out/
+vscode-extension/*.vsix
+vscode-extension/.vscode/
+
+# LSP npm workspace (if present)
+lsp/node_modules/
+lsp/out/
+
+# Package managers
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Docker build cache
+**/.docker-cache/
+
+# Misc
+*.coverage
+coverage/

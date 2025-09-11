@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Dipanjan Dhar
+# SPDX-License-Identifier: GPL-3.0-only
+
 cmake_minimum_required(VERSION 3.16)
 
 project(kio VERSION 2.0.0 LANGUAGES CXX)

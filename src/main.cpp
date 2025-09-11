@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2025 Dipanjan Dhar
+SPDX-License-Identifier: GPL-3.0-only
+*/
+
 #include <filesystem>
 #include <fstream>
 #include <iostream>

@@ -1,4 +1,7 @@
 #!/bin/bash
+# Copyright (c) 2025 Dipanjan Dhar
+# SPDX-License-Identifier: GPL-3.0-only
+
 
 # Clean build script that removes all build artifacts
 set -e

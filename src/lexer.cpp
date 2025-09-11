@@ -1,3 +1,8 @@
+/*
+Copyright (c) 2025 Dipanjan Dhar
+SPDX-License-Identifier: GPL-3.0-only
+*/
+
 #include "kio/lexer.hpp"
 #include <cctype>
 #include <unordered_map>
@@ -56,6 +61,9 @@ void Lexer::identifier(std::vector<Token> &tokens) {
         {"load", TokenType::LOAD},
         {"sys", TokenType::SYS},
         {"import", TokenType::IMPORT},
+        {"if", TokenType::IF},
+        {"else", TokenType::ELSE},
+        {"while", TokenType::WHILE},
     };
     // Load aliases from env once per process
     static bool aliasesLoaded = false;
@@ -108,6 +116,8 @@ void Lexer::scanToken(std::vector<Token> &tokens) {
     switch (c) {
         case '(': addToken(tokens, TokenType::LEFT_PAREN); break;
         case ')': addToken(tokens, TokenType::RIGHT_PAREN); break;
+        case '{': addToken(tokens, TokenType::LEFT_BRACE); break;
+        case '}': addToken(tokens, TokenType::RIGHT_BRACE); break;
         case '+': addToken(tokens, TokenType::PLUS); break;
         case '-': addToken(tokens, TokenType::MINUS); break;
         case '*': addToken(tokens, TokenType::STAR); break;
@@ -118,7 +128,11 @@ void Lexer::scanToken(std::vector<Token> &tokens) {
                 addToken(tokens, TokenType::SLASH);
             }
             break;
-        case '=': addToken(tokens, TokenType::EQUAL); break;
+        case '%': addToken(tokens, TokenType::PERCENT); break;
+        case '!': addToken(tokens, match('=') ? TokenType::BANG_EQUAL : TokenType::BANG); break;
+        case '=': addToken(tokens, match('=') ? TokenType::EQUAL_EQUAL : TokenType::EQUAL); break;
+        case '<': addToken(tokens, match('=') ? TokenType::LESS_EQUAL : TokenType::LESS); break;
+        case '>': addToken(tokens, match('=') ? TokenType::GREATER_EQUAL : TokenType::GREATER); break;
         case ';': addToken(tokens, TokenType::SEMICOLON); break;
         case ' ':
         case '\r':

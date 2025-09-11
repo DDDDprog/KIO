@@ -1,3 +1,6 @@
+# Copyright (c) 2025 Dipanjan Dhar
+# SPDX-License-Identifier: GPL-3.0-only
+
 # KIO Programming Language - Professional Build System
 .PHONY: all clean install test package lsp vscode-ext docs benchmark
 
