@@ -1,4 +1,4 @@
-<img src="images/logo.jpg" alt="KIO Logo" width="16000" />
+<img src="KIO-main/docs/images/logo.jpg" alt="KIO Logo" width="16000" />
 
 # KIO Programming Language
 
