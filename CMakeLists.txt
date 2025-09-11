@@ -168,7 +168,20 @@ install(TARGETS kio RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 include(CTest)
 add_test(NAME kio_hello COMMAND kio ${PROJECT_SOURCE_DIR}/examples/hello.kio)
-set_tests_properties(kio_hello PROPERTIES PASS_REGULAR_EXPRESSION "^42\nkio\n$")
+set_tests_properties(kio_hello PROPERTIES PASS_REGULAR_EXPRESSION "^42\\nkio\\n$")
+
+# Core operator tests (always enabled)
+add_test(NAME kio_equality COMMAND kio ${PROJECT_SOURCE_DIR}/examples/equality_test.kio)
+set_tests_properties(kio_equality PROPERTIES PASS_REGULAR_EXPRESSION "^1\\n1\\n$")
+
+add_test(NAME kio_comparisons COMMAND kio ${PROJECT_SOURCE_DIR}/examples/comparisons_test.kio)
+set_tests_properties(kio_comparisons PROPERTIES PASS_REGULAR_EXPRESSION "^1\\n1\\n1\\n1\\n$")
+
+add_test(NAME kio_modulo COMMAND kio ${PROJECT_SOURCE_DIR}/examples/modulo_test.kio)
+set_tests_properties(kio_modulo PROPERTIES PASS_REGULAR_EXPRESSION "^1\\n$")
+
+add_test(NAME kio_arithmetic COMMAND kio ${PROJECT_SOURCE_DIR}/examples/arithmetic_test.kio)
+set_tests_properties(kio_arithmetic PROPERTIES PASS_REGULAR_EXPRESSION "^1\\n1\\n1\\n1\\n$")
 
 # Only enable extended tests when the corresponding features are enabled
 if (KIO_ENABLE_PARALLEL)
