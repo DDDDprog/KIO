@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (c) 2025 Dipanjan Dhar
+# Copyrigh (c) 2025 Dipanjan Dhar
 # SPDX-License-Identifier: GPL-3.0-only
 
 
