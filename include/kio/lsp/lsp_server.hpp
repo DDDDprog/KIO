@@ -14,6 +14,8 @@ SPDX-License-Identifier: GPL-3.0-only
 #include <condition_variable>
 #include <queue>
 #include <atomic>
+#include <vector>
+#include "kio/lsp/types.hpp"
 #include "kio/lsp/document_manager.hpp"
 #include "kio/lsp/diagnostics.hpp"
 #include "kio/lsp/completion.hpp"
@@ -23,46 +25,6 @@ SPDX-License-Identifier: GPL-3.0-only
 #include "kio/lsp/semantic_tokens.hpp"
 
 namespace kio::lsp {
-
-struct Position {
-    int line;
-    int character;
-};
-
-struct Range {
-    Position start;
-    Position end;
-};
-
-struct Location {
-    std::string uri;
-    Range range;
-};
-
-struct TextEdit {
-    Range range;
-    std::string newText;
-};
-
-struct CompletionItem {
-    std::string label;
-    std::string detail;
-    std::string documentation;
-    int kind;
-    std::string insertText;
-};
-
-struct Diagnostic {
-    Range range;
-    int severity;
-    std::string message;
-    std::string source;
-};
-
-struct Hover {
-    std::string contents;
-    Range range;
-};
 
 class LSPServer {
 public:
@@ -89,11 +51,11 @@ public:
     Hover hover(const std::string& uri, Position pos);
     std::vector<Location> gotoDefinition(const std::string& uri, Position pos);
     std::vector<TextEdit> formatting(const std::string& uri);
-    std::vector<int> semanticTokens(const std::string& uri);
+    std::vector<uint32_t> semanticTokens(const std::string& uri);
     
 private:
     std::unique_ptr<DocumentManager> document_manager_;
-    std::unique_ptr<DiagnosticsEngine> diagnostics_;
+    std::unique_ptr<DiagnosticsProvider> diagnostics_;
     std::unique_ptr<CompletionProvider> completion_provider_;
     std::unique_ptr<HoverProvider> hover_provider_;
     std::unique_ptr<GotoDefinitionProvider> goto_provider_;

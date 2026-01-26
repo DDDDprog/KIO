@@ -8,56 +8,21 @@ SPDX-License-Identifier: GPL-3.0-only
 #include <string>
 #include <vector>
 #include <optional>
+#include "kio/lsp/types.hpp"
 
-namespace kio {
-namespace lsp {
-
-struct Position {
-    int line;
-    int character;
-    
-    Position(int l = 0, int c = 0) : line(l), character(c) {}
-};
-
-struct Range {
-    Position start;
-    Position end;
-    
-    Range(Position s = Position(), Position e = Position()) : start(s), end(e) {}
-};
-
-struct Location {
-    std::string uri;
-    Range range;
-    
-    Location(const std::string& u = "", Range r = Range()) : uri(u), range(r) {}
-};
-
-struct DefinitionInfo {
-    std::string name;
-    std::string type;
-    Location location;
-    
-    DefinitionInfo(const std::string& n = "", const std::string& t = "", 
-                   Location loc = Location()) 
-        : name(n), type(t), location(loc) {}
-};
+namespace kio::lsp {
 
 class GotoDefinitionProvider {
 public:
     GotoDefinitionProvider();
     ~GotoDefinitionProvider();
     
-    std::vector<Location> getDefinition(const std::string& uri, const Position& position);
-    std::vector<Location> getDeclaration(const std::string& uri, const Position& position);
-    std::vector<Location> getReferences(const std::string& uri, const Position& position);
-
+    std::optional<Location> get_definition(const std::string& content, const Position& position);
+    
 private:
-    std::optional<DefinitionInfo> findSymbolAt(const std::string& content, 
-                                              const Position& position);
-    std::vector<Location> searchForDefinition(const std::string& symbolName);
-    std::vector<Location> searchForReferences(const std::string& symbolName);
+    std::optional<std::string> get_symbol_at_position(const std::string& content, const Position& position);
+    std::optional<Location> find_symbol_definition(const std::string& symbol, const std::string& content);
+    Position offset_to_position(const std::string& content, size_t offset);
 };
 
-} // namespace lsp
-} // namespace kio
+} // namespace kio::lsp

@@ -23,6 +23,7 @@ private:
     size_t current_ {0};
     int line_ {1};
     int column_ {1};
+    int startColumn_ {1};
 
     bool isAtEnd() const;
     void scanToken(std::vector<Token> &tokens);
@@ -34,6 +35,7 @@ private:
     void identifier(std::vector<Token> &tokens);
     void number(std::vector<Token> &tokens);
     void stringLiteral(std::vector<Token> &tokens);
+    void charLiteral(std::vector<Token> &tokens);
 };
 
 } // namespace kio

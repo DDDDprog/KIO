@@ -91,10 +91,26 @@ endif()
 enable_testing()
 
 add_library(kio_core
-    src/lexer.cpp
-    src/parser.cpp
-    src/interpreter.cpp
-    src/config.cpp
+    src/tokenizer/lexer.cpp
+    src/tokenizer/token_stream.cpp
+    src/tokenizer/preprocessor.cpp
+    src/parser/parser.cpp
+    src/parser/parser_extensions.cpp
+    src/parser/error_recovery.cpp
+    src/parser/ast_visitor.cpp
+    src/data/token.cpp
+    src/core/interpreter.cpp
+    src/vm/vm.cpp
+    src/vm/compiler.cpp
+    src/core/config.cpp
+    src/features/jit_compiler.cpp
+    src/features/optimizer.cpp
+    src/features/memory_manager.cpp
+    src/features/parallel_executor.cpp
+    src/features/type_system.cpp
+    src/core/type_impl.cpp
+    src/vector/vector_ops.cpp
+    src/database/db_driver.cpp
 )
 
 # Optionally include LSP sources when enabled
@@ -149,7 +165,7 @@ if(KIO_BUILD_LSP)
 endif()
 
 add_executable(kio
-    src/main.cpp
+    src/core/main.cpp
 )
 
 target_link_libraries(kio PRIVATE kio_core)

@@ -36,6 +36,9 @@ public:
 struct Expr;
 using ExprPtr = std::unique_ptr<Expr>;
 
+struct Stmt;
+using StmtPtr = std::unique_ptr<Stmt>;
+
 struct Expr {
     struct Literal { std::variant<double, std::string> value; };
     struct Variable { std::string name; };
@@ -43,22 +46,52 @@ struct Expr {
     struct Assign { std::string name; ExprPtr value; };
     struct Grouping { ExprPtr expression; };
     struct SysQuery { std::string key; };
+    struct Logical { ExprPtr left; Token op; ExprPtr right; };
+    struct PostOp { std::string name; Token op; };
+    struct Call { ExprPtr callee; std::vector<ExprPtr> arguments; };
+    struct Get { ExprPtr object; std::string name; };
+    struct Set { ExprPtr object; std::string name; ExprPtr value; };
+    struct This { std::string keyword; };
+    struct Super { Token keyword; std::string method; };
+    struct Unary { Token op; ExprPtr right; };
+    struct Ternary { ExprPtr condition; ExprPtr thenExpr; ExprPtr elseExpr; };
+    struct Array { std::vector<ExprPtr> elements; };
+    struct Index { ExprPtr object; ExprPtr index; };
+    struct IndexSet { ExprPtr object; ExprPtr index; ExprPtr value; };
+    struct Lambda { std::vector<std::pair<std::string, std::string>> params; std::vector<StmtPtr> body; };
 
-    std::variant<Literal, Variable, Binary, Grouping, Assign, SysQuery> node;
+    std::variant<Literal, Variable, Binary, Grouping, Assign, SysQuery, Logical, PostOp, Call, Get, Set, This, Super, Unary, Ternary, Array, Index, IndexSet, Lambda> node;
 };
 
 struct Stmt;
 using StmtPtr = std::unique_ptr<Stmt>;
-
 struct Stmt {
     struct Print { ExprPtr expression; };
-    struct Var { std::string name; ExprPtr initializer; };
+    struct Var { std::string name; ExprPtr initializer; std::string typeAnnotation; bool isConst; };
     struct Expression { ExprPtr expression; };
     struct Save { std::string path; };
     struct Load { std::string path; };
     struct Import { std::string path; };
+    struct Block { std::vector<StmtPtr> statements; };
+    struct If { ExprPtr condition; StmtPtr thenBranch; StmtPtr elseBranch; }; // elseBranch can be nullptr
+    struct While { ExprPtr condition; StmtPtr body; };
+    struct For { StmtPtr initializer; ExprPtr condition; ExprPtr increment; StmtPtr body; };
+    struct ForIn { std::string name; ExprPtr iterable; StmtPtr body; };
+    struct Function { std::string name; std::vector<std::pair<std::string, std::string>> params; std::string returnType; std::vector<StmtPtr> body; };
+    struct Switch { ExprPtr expression; std::vector<std::pair<ExprPtr, std::vector<StmtPtr>>> cases; std::vector<StmtPtr> defaultCase; };
+    struct TryCatch { std::vector<StmtPtr> tryBlock; std::string catchVar; std::vector<StmtPtr> catchBlock; std::vector<StmtPtr> finallyBlock; };
+    struct Throw { ExprPtr expression; };
+    struct Break {};
+    struct Continue {};
+    struct Return { ExprPtr value; };
+    struct Class { std::string name; std::string superclass; std::vector<StmtPtr> methods; std::vector<StmtPtr> fields; };
+    struct Namespace { std::string name; std::vector<StmtPtr> statements; };
+    struct Parallel { std::vector<StmtPtr> body; };
+    struct Module { std::string name; std::vector<StmtPtr> body; };
+    struct Export { StmtPtr statement; };
+    struct ImportFrom { std::string name; std::string path; };
 
-    std::variant<Print, Var, Expression, Save, Load, Import> node;
+    std::variant<Print, Var, Expression, Save, Load, Import, Block, If, While, For, ForIn, Function, Switch, TryCatch, Throw, Break, Continue, Return, Class, Namespace, Parallel, Module, Export, ImportFrom> node;
 };
 
 class ExpressionNode : public ASTNode {

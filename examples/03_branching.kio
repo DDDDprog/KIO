@@ -1,0 +1,30 @@
+// KIO Branching: If-Else Statements
+
+let score = 85;
+
+print "Student Score: " + score;
+
+if (score >= 90) {
+    print "Grade: A";
+} else {
+    if (score >= 80) {
+        print "Grade: B";
+    } else {
+        if (score >= 70) {
+            print "Grade: C";
+        } else {
+            print "Grade: F";
+        }
+    }
+}
+
+// Simple truthiness check
+if (1) {
+    print "1 is truthy";
+}
+
+if (0) {
+    print "This won't print";
+} else {
+    print "0 is falsy";
+}

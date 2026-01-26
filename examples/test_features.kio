@@ -1,0 +1,17 @@
+let x = 10;
+if (x > 5) {
+    print "x is greater than 5";
+} else {
+    print "x is not greater than 5";
+}
+
+let count = 0;
+while (count < 3) {
+    print count;
+    count = count + 1;
+}
+
+{
+    let y = 100;
+    print y;
+}

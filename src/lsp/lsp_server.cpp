@@ -12,8 +12,8 @@ namespace kio::lsp {
 
 LSPServer::LSPServer() 
     : document_manager_(std::make_unique<DocumentManager>())
-    , diagnostics_(std::make_unique<DiagnosticsEngine>(document_manager_.get()))
-    , completion_provider_(std::make_unique<CompletionProvider>(document_manager_.get()))
+    , diagnostics_(std::make_unique<DiagnosticsProvider>())
+    , completion_provider_(std::make_unique<CompletionProvider>())
     , hover_provider_(std::make_unique<HoverProvider>())
     , goto_provider_(std::make_unique<GotoDefinitionProvider>())
     , formatting_provider_(std::make_unique<DocumentFormatter>())
@@ -70,11 +70,16 @@ void LSPServer::processRequests() {
 }
 
 std::vector<CompletionItem> LSPServer::completion(const std::string& uri, Position pos) {
-    return completion_provider_->provideCompletion(uri, pos);
+    auto doc = document_manager_->get_document(uri);
+    if (!doc) return {};
+    return completion_provider_->get_completions(doc->content, pos);
 }
 
 Hover LSPServer::hover(const std::string& uri, Position pos) {
-    return hover_provider_->provideHover(uri, pos);
+    auto doc = document_manager_->get_document(uri);
+    if (!doc) return {"", std::nullopt};
+    auto h = hover_provider_->get_hover(doc->content, pos);
+    return h ? *h : Hover{"", std::nullopt};
 }
 
 void LSPServer::didOpen(const std::string& uri, const std::string& text) {
@@ -88,8 +93,31 @@ void LSPServer::didChange(const std::string& uri, const std::string& text) {
 }
 
 void LSPServer::publishDiagnostics(const std::string& uri) {
-    auto diagnostics = diagnostics_->analyzDocument(uri);
+    auto doc = document_manager_->get_document(uri);
+    if (!doc) return;
+    auto diagnostics = diagnostics_->analyze_document(doc->content);
     // Send diagnostics notification to client
+}
+
+std::vector<Location> LSPServer::gotoDefinition(const std::string& uri, Position pos) {
+    auto doc = document_manager_->get_document(uri);
+    if (!doc) return {};
+    auto loc = goto_provider_->get_definition(doc->content, pos);
+    if (loc) return {*loc};
+    return {};
+}
+
+std::vector<TextEdit> LSPServer::formatting(const std::string& uri) {
+    auto doc = document_manager_->get_document(uri);
+    if (!doc) return {};
+    FormattingOptions options; 
+    return formatting_provider_->format_document(doc->content, options);
+}
+
+std::vector<uint32_t> LSPServer::semanticTokens(const std::string& uri) {
+    auto doc = document_manager_->get_document(uri);
+    if (!doc) return {};
+    return tokens_provider_->get_semantic_tokens(doc->content);
 }
 
 } // namespace kio::lsp

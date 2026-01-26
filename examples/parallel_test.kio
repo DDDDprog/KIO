@@ -1,4 +1,4 @@
-import thread from "std/thread";
+import "examples/lib_constants.kio";
 
 function heavy_computation(n) {
     let result = 0;
@@ -9,11 +9,11 @@ function heavy_computation(n) {
 }
 
 // Sequential execution
-let start = sys("time");
+let start = sys "time";
 let seq1 = heavy_computation(1000000);
 let seq2 = heavy_computation(1000000);
 let seq3 = heavy_computation(1000000);
-let sequential_time = sys("time") - start;
+let sequential_time = (sys "time") - start;
 
 // Parallel execution
 start = sys("time");
@@ -22,7 +22,7 @@ parallel {
     let par2 = heavy_computation(1000000);
     let par3 = heavy_computation(1000000);
 }
-let parallel_time = sys("time") - start;
+let parallel_time = (sys "time") - start;
 
 print("Sequential time: " + sequential_time + "ms");
 print("Parallel time: " + parallel_time + "ms");

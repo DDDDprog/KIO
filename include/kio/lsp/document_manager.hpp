@@ -11,18 +11,12 @@ SPDX-License-Identifier: GPL-3.0-only
 #include <mutex>
 #include <vector>
 #include <optional>
+#include "kio/lsp/types.hpp"
 #include "kio/ast.hpp"
 #include "kio/lexer.hpp"
 #include "kio/parser.hpp"
 
 namespace kio::lsp {
-
-struct Position {
-    int line;
-    int character;
-    
-    Position(int l = 0, int c = 0) : line(l), character(c) {}
-};
 
 struct Document {
     std::string content;

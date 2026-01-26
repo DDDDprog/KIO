@@ -9,6 +9,7 @@ SPDX-License-Identifier: GPL-3.0-only
 #include <vector>
 #include <unordered_map>
 #include <memory>
+#include <variant>
 
 namespace kio {
 
@@ -45,9 +46,8 @@ public:
     TypeSystem();
     
     // Type inference and checking
-    std::shared_ptr<Type> inferType(const class Value &value);
-    std::shared_ptr<Type> inferType(const class ExprPtr &expr);
-    bool checkType(const class Value &value, const Type &expected);
+    std::shared_ptr<Type> inferType(const std::variant<std::monostate, double, std::string> &value);
+    bool checkType(const std::variant<std::monostate, double, std::string> &value, const Type &expected);
     
     // Type registration
     void registerType(const std::string &name, std::shared_ptr<Type> type);

@@ -8,35 +8,24 @@ SPDX-License-Identifier: GPL-3.0-only
 #include <vector>
 #include <string>
 #include <memory>
-#include "kio/lsp/lsp_server.hpp"
-#include "kio/lsp/document_manager.hpp"
+#include "kio/lsp/types.hpp"
+#include "kio/ast.hpp"
 
 namespace kio::lsp {
 
-enum class DiagnosticSeverity {
-    Error = 1,
-    Warning = 2,
-    Information = 3,
-    Hint = 4
-};
-
-class DiagnosticsEngine {
+class DiagnosticsProvider {
 public:
-    DiagnosticsEngine(DocumentManager* doc_manager);
-    ~DiagnosticsEngine();
+    DiagnosticsProvider();
+    ~DiagnosticsProvider();
     
-    std::vector<Diagnostic> analyzDocument(const std::string& uri);
+    std::vector<Diagnostic> analyze_document(const std::string& content);
     
 private:
-    DocumentManager* doc_manager_;
-    
-    std::vector<Diagnostic> checkSyntaxErrors(std::shared_ptr<Document> doc);
-    std::vector<Diagnostic> checkSemanticErrors(std::shared_ptr<Document> doc);
-    std::vector<Diagnostic> checkStyleWarnings(std::shared_ptr<Document> doc);
-    std::vector<Diagnostic> checkPerformanceHints(std::shared_ptr<Document> doc);
-    
-    Diagnostic createDiagnostic(const Range& range, DiagnosticSeverity severity, 
-                               const std::string& message, const std::string& source = "kio");
+    void analyze_semantics(const std::vector<StmtPtr>& statements, std::vector<Diagnostic>& diagnostics);
+    void check_statement(const StmtPtr& stmt, std::vector<Diagnostic>& diagnostics);
+    void check_undefined_variables(const StmtPtr& stmt, std::vector<Diagnostic>& diagnostics);
+    void check_type_mismatches(const StmtPtr& stmt, std::vector<Diagnostic>& diagnostics);
+    void check_unreachable_code(const StmtPtr& stmt, std::vector<Diagnostic>& diagnostics);
 };
 
 } // namespace kio::lsp

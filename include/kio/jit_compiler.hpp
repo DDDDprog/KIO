@@ -13,7 +13,8 @@ SPDX-License-Identifier: GPL-3.0-only
 
 namespace kio {
 
-class Value;
+// Forward declaration - Value is defined in interpreter.hpp
+using Value = std::variant<std::monostate, double, std::string>;
 
 class JITCompiler {
 public:

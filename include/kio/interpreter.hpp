@@ -2,23 +2,18 @@
 Copyright (c) 2025 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
-
 #pragma once
 
 #include <unordered_map>
-#include <variant>
 #include <string>
 #include <memory>
 #include "kio/ast.hpp"
+#include "kio/bytecode.hpp"
 
 namespace kio {
 
-// Minimal runtime value type used by the current interpreter implementation
-using Value = std::variant<std::monostate, double, std::string>;
-
 class Interpreter {
 public:
-    // Use compiler-generated constructor/destructor
     void interpret(const std::vector<StmtPtr> &statements);
 
 private:
@@ -27,19 +22,29 @@ private:
     void execute(const StmtPtr &stmt);
     Value evaluate(const ExprPtr &expr);
 
+    void executePrint(const Stmt::Print &printStmt);
+    void executeVar(const Stmt::Var &varStmt);
+    void executeExpression(const Stmt::Expression &exprStmt);
+    void executeBlock(const Stmt::Block &blockStmt);
+    void executeIf(const Stmt::If &ifStmt);
+    void executeWhile(const Stmt::While &whileStmt);
+    void executeFor(const Stmt::For &forStmt);   
+    void executeForIn(const Stmt::ForIn &forInStmt);
+    void executeSave(const Stmt::Save &saveStmt);
+    void executeLoad(const Stmt::Load &loadStmt);
+    void executeImport(const Stmt::Import &importStmt);
+    void executeImportFrom(const Stmt::ImportFrom &importFromStmt);
+    void executeModule(const Stmt::Module &moduleStmt);
+    void executeExport(const Stmt::Export &exportStmt);
+    void executeParallel(const Stmt::Parallel &parallelStmt);
     Value evaluateLiteral(const Expr::Literal &lit);
     Value evaluateVariable(const Expr::Variable &var);
     Value evaluateBinary(const Expr::Binary &bin);
     Value evaluateGrouping(const Expr::Grouping &grp);
     Value evaluateAssign(const Expr::Assign &as);
     Value evaluateSysQuery(const Expr::SysQuery &sq);
-
-    void executePrint(const Stmt::Print &printStmt);
-    void executeVar(const Stmt::Var &varStmt);
-    void executeExpression(const Stmt::Expression &exprStmt);
-    void executeSave(const Stmt::Save &saveStmt);
-    void executeLoad(const Stmt::Load &loadStmt);
-    void executeImport(const Stmt::Import &importStmt);
+    Value evaluateLogical(const Expr::Logical &logical);
+    Value evaluatePostOp(const Expr::PostOp &post);
 };
 
 } // namespace kio

@@ -1,0 +1,40 @@
+// KIO Comprehensive Test
+print "--- KIO Programming Language Test ---";
+
+// Variables and Arithmetic
+let a = 10;
+let b = 20;
+let c = a + b * 2; 
+print "Result of 10 + 20 * 2:";
+print c;
+
+// Comparisons
+print "Is 50 > 30?";
+print 50 > 30;
+
+// If-Else
+if (c > 40) {
+    print "c is greater than 40";
+} else {
+    print "c is not greater than 40";
+}
+
+// While Loop
+let i = 1;
+print "Counting to 3:";
+while (i <= 3) {
+    print i;
+    i = i + 1;
+}
+
+// Blocks and Scoping (Note: currently environment is global/flat in implementation, but braces parse)
+{
+    let localVal = "inside block";
+    print localVal;
+}
+
+// System Query
+print "OS Name:";
+print sys "os_name";
+
+print "--- Test Complete ---";

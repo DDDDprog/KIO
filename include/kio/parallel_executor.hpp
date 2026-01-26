@@ -10,10 +10,13 @@ SPDX-License-Identifier: GPL-3.0-only
 #include <future>
 #include <thread>
 #include <functional>
+#include <variant>
+#include <string>
 
 namespace kio {
 
-class Value; // Forward declaration
+// Value is a type alias defined in interpreter.hpp
+using Value = std::variant<std::monostate, double, std::string>;
 class Stmt; // Forward declaration
 
 class ParallelExecutor {

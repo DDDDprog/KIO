@@ -29,9 +29,9 @@ std::vector<SemanticToken> SemanticTokensProvider::analyze_tokens(const std::str
         
         for (const auto& token : tokens) {
             SemanticToken semantic_token;
-            semantic_token.line = token.line;
-            semantic_token.character = token.column;
-            semantic_token.length = token.value.length();
+            semantic_token.line = token.line - 1; // LSP is 0-indexed
+            semantic_token.character = token.column - 1;
+            semantic_token.length = static_cast<int>(token.lexeme.length());
             semantic_token.type = map_token_type(token.type);
             semantic_token.modifiers = 0;
             
@@ -46,7 +46,15 @@ std::vector<SemanticToken> SemanticTokensProvider::analyze_tokens(const std::str
 
 uint32_t SemanticTokensProvider::map_token_type(kio::TokenType token_type) {
     switch (token_type) {
-        case kio::TokenType::KEYWORD:
+        case kio::TokenType::PRINT:
+        case kio::TokenType::LET:
+        case kio::TokenType::SAVE:
+        case kio::TokenType::LOAD:
+        case kio::TokenType::SYS:
+        case kio::TokenType::IMPORT:
+        case kio::TokenType::IF:
+        case kio::TokenType::ELSE:
+        case kio::TokenType::WHILE:
             return static_cast<uint32_t>(SemanticTokenType::Keyword);
         case kio::TokenType::IDENTIFIER:
             return static_cast<uint32_t>(SemanticTokenType::Variable);
@@ -54,9 +62,12 @@ uint32_t SemanticTokensProvider::map_token_type(kio::TokenType token_type) {
             return static_cast<uint32_t>(SemanticTokenType::Number);
         case kio::TokenType::STRING:
             return static_cast<uint32_t>(SemanticTokenType::String);
-        case kio::TokenType::COMMENT:
-            return static_cast<uint32_t>(SemanticTokenType::Comment);
-        case kio::TokenType::OPERATOR:
+        case kio::TokenType::PLUS:
+        case kio::TokenType::MINUS:
+        case kio::TokenType::STAR:
+        case kio::TokenType::SLASH:
+        case kio::TokenType::EQUAL:
+        case kio::TokenType::EQUAL_EQUAL:
             return static_cast<uint32_t>(SemanticTokenType::Operator);
         default:
             return static_cast<uint32_t>(SemanticTokenType::Variable);

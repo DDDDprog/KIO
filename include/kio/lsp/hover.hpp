@@ -7,44 +7,22 @@ SPDX-License-Identifier: GPL-3.0-only
 
 #include <string>
 #include <optional>
+#include <unordered_map>
+#include "kio/lsp/types.hpp"
 
-namespace kio {
-namespace lsp {
-
-struct Position {
-    int line;
-    int character;
-    
-    Position(int l = 0, int c = 0) : line(l), character(c) {}
-};
-
-struct Range {
-    Position start;
-    Position end;
-    
-    Range(Position s = Position(), Position e = Position()) : start(s), end(e) {}
-};
-
-struct HoverInfo {
-    std::string contents;
-    std::optional<Range> range;
-    
-    HoverInfo(const std::string& c = "", std::optional<Range> r = std::nullopt) 
-        : contents(c), range(r) {}
-};
+namespace kio::lsp {
 
 class HoverProvider {
 public:
     HoverProvider();
     ~HoverProvider();
     
-    std::optional<HoverInfo> getHover(const std::string& uri, const Position& position);
+    std::optional<Hover> get_hover(const std::string& content, const Position& position);
     
 private:
-    std::optional<HoverInfo> getVariableHover(const std::string& name, const Position& pos);
-    std::optional<HoverInfo> getFunctionHover(const std::string& name, const Position& pos);
-    std::optional<HoverInfo> getKeywordHover(const std::string& keyword, const Position& pos);
+    std::optional<WordRange> get_word_at_position(const std::string& content, const Position& position);
+    std::optional<std::string> get_hover_info(const std::string& word);
+    Range position_range_to_lsp_range(const std::string& content, const WordRange& word_range);
 };
 
-} // namespace lsp
-} // namespace kio
+} // namespace kio::lsp

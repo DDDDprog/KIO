@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2025 Dipanjan Dhar
+Copyright (c) 2026 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
@@ -14,11 +14,10 @@ DocumentManager::DocumentManager() = default;
 DocumentManager::~DocumentManager() = default;
 
 void DocumentManager::open_document(const std::string& uri, const std::string& content) {
-    documents_[uri] = {
-        .content = content,
-        .version = 1,
-        .is_dirty = false
-    };
+    auto& doc = documents_[uri];
+    doc.content = content;
+    doc.version = 1;
+    doc.is_dirty = false;
 }
 
 void DocumentManager::close_document(const std::string& uri) {

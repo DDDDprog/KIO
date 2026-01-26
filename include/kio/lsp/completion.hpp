@@ -8,52 +8,28 @@ SPDX-License-Identifier: GPL-3.0-only
 #include <vector>
 #include <string>
 #include <memory>
-#include "kio/lsp/lsp_server.hpp"
+#include "kio/lsp/types.hpp"
 #include "kio/lsp/document_manager.hpp"
 
 namespace kio::lsp {
 
-enum class CompletionItemKind {
-    Text = 1,
-    Method = 2,
-    Function = 3,
-    Constructor = 4,
-    Field = 5,
-    Variable = 6,
-    Class = 7,
-    Interface = 8,
-    Module = 9,
-    Property = 10,
-    Unit = 11,
-    Value = 12,
-    Enum = 13,
-    Keyword = 14,
-    Snippet = 15,
-    Color = 16,
-    File = 17,
-    Reference = 18
-};
-
 class CompletionProvider {
 public:
-    CompletionProvider(DocumentManager* doc_manager);
+    CompletionProvider();
     ~CompletionProvider();
     
-    std::vector<CompletionItem> provideCompletion(const std::string& uri, Position pos);
+    std::vector<CompletionItem> get_completions(const std::string& content, const Position& position);
     
 private:
-    DocumentManager* doc_manager_;
+    std::vector<CompletionItem> builtin_completions_;
     
-    std::vector<CompletionItem> getKeywordCompletions();
-    std::vector<CompletionItem> getBuiltinCompletions();
-    std::vector<CompletionItem> getVariableCompletions(std::shared_ptr<Document> doc, Position pos);
-    std::vector<CompletionItem> getFunctionCompletions(std::shared_ptr<Document> doc, Position pos);
-    std::vector<CompletionItem> getModuleCompletions(std::shared_ptr<Document> doc, Position pos);
-    std::vector<CompletionItem> getSnippetCompletions();
+    void initialize_builtin_completions();
+    CompletionContext analyze_context(const std::string& content, const Position& position);
     
-    CompletionItem createCompletion(const std::string& label, CompletionItemKind kind,
-                                   const std::string& detail = "", const std::string& docs = "",
-                                   const std::string& insertText = "");
+    void add_keyword_completions(const CompletionContext& context, std::vector<CompletionItem>& completions);
+    void add_builtin_completions(const CompletionContext& context, std::vector<CompletionItem>& completions);
+    void add_variable_completions(const CompletionContext& context, std::vector<CompletionItem>& completions);
+    void add_module_completions(const CompletionContext& context, std::vector<CompletionItem>& completions);
 };
 
 } // namespace kio::lsp

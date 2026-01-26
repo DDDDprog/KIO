@@ -1,0 +1,18 @@
+// KIO System: Querying machine information using 'sys'
+
+print "--- System Information ---";
+
+print "OS Name:";
+print sys "os_name";
+
+print "CPU Model:";
+print sys "cpu_model";
+
+print "Total Memory (KB):";
+print sys "mem_total_kb";
+
+print "Root Disk Space (KB):";
+print sys "disk_root_kb";
+
+print "Current Time:";
+print sys "time";

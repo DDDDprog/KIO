@@ -1,0 +1,28 @@
+// KIO FizzBuzz: Classic coding challenge
+// Print numbers 1 to 20. 
+// If divisible by 3, print "Fizz". 
+// If divisible by 5, print "Buzz". 
+// If divisible by both, print "FizzBuzz".
+
+let n = 1;
+
+while (n <= 20) {
+    let fizz = n % 3 == 0;
+    let buzz = n % 5 == 0;
+    
+    if (fizz) {
+        if (buzz) {
+            print "FizzBuzz";
+        } else {
+            print "Fizz";
+        }
+    } else {
+        if (buzz) {
+            print "Buzz";
+        } else {
+            print n;
+        }
+    }
+    
+    n = n + 1;
+}

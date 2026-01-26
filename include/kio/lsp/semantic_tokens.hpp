@@ -8,78 +8,23 @@ SPDX-License-Identifier: GPL-3.0-only
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include "kio/lsp/types.hpp"
+#include "kio/token.hpp"
 
-namespace kio {
-namespace lsp {
-
-enum class TokenType {
-    Namespace,
-    Type,
-    Class,
-    Enum,
-    Interface,
-    Struct,
-    TypeParameter,
-    Parameter,
-    Variable,
-    Property,
-    EnumMember,
-    Event,
-    Function,
-    Method,
-    Macro,
-    Keyword,
-    Modifier,
-    Comment,
-    String,
-    Number,
-    Regexp,
-    Operator
-};
-
-enum class TokenModifier {
-    Declaration,
-    Definition,
-    Readonly,
-    Static,
-    Deprecated,
-    Abstract,
-    Async,
-    Modification,
-    Documentation,
-    DefaultLibrary
-};
-
-struct SemanticToken {
-    int line;
-    int startChar;
-    int length;
-    TokenType tokenType;
-    std::vector<TokenModifier> modifiers;
-    
-    SemanticToken(int l = 0, int s = 0, int len = 0, TokenType type = TokenType::Variable)
-        : line(l), startChar(s), length(len), tokenType(type) {}
-};
+namespace kio::lsp {
 
 class SemanticTokensProvider {
 public:
     SemanticTokensProvider();
     ~SemanticTokensProvider();
     
-    std::vector<int> getSemanticTokens(const std::string& content);
-    std::vector<SemanticToken> getSemanticTokensStructured(const std::string& content);
+    std::vector<uint32_t> get_semantic_tokens(const std::string& content);
     
-    static std::vector<std::string> getTokenTypes();
-    static std::vector<std::string> getTokenModifiers();
-
 private:
-    std::vector<SemanticToken> analyzeTokens(const std::string& content);
-    TokenType classifyToken(const std::string& token, const std::string& context);
-    std::vector<int> encodeTokens(const std::vector<SemanticToken>& tokens);
-    
-    std::unordered_map<std::string, TokenType> keyword_map_;
-    void initializeKeywordMap();
+    std::vector<SemanticToken> analyze_tokens(const std::string& content);
+    uint32_t map_token_type(kio::TokenType token_type);
+    std::vector<uint32_t> encode_tokens(const std::vector<SemanticToken>& tokens);
+    void initialize_token_types();
 };
 
-} // namespace lsp
-} // namespace kio
+} // namespace kio::lsp

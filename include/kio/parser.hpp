@@ -1,8 +1,4 @@
-/*
-Copyright (c) 2025 Dipanjan Dhar
-SPDX-License-Identifier: GPL-3.0-only
-*/
-
+/* Copyright (c) 2025 Dipanjan Dhar SPDX-License-Identifier: GPL-3.0-only */
 #pragma once
 
 #include <vector>
@@ -30,22 +26,45 @@ private:
 
     StmtPtr declaration();
     StmtPtr varDeclaration();
+    StmtPtr constDeclaration();
+    StmtPtr functionDeclaration();
     StmtPtr statement();
     StmtPtr printStatement();
+    StmtPtr ifStatement();
+    StmtPtr whileStatement();
+    StmtPtr forStatement();
+    StmtPtr block();
     StmtPtr saveStatement();
     StmtPtr loadStatement();
     StmtPtr importStatement();
     StmtPtr expressionStatement();
+    StmtPtr switchStatement();
+    StmtPtr tryCatchStatement();
+    StmtPtr throwStatement();
+    StmtPtr breakStatement();
+    StmtPtr continueStatement();
+    StmtPtr returnStatement();
+    StmtPtr classDeclaration();
+    StmtPtr namespaceDeclaration();
+    StmtPtr moduleDeclaration();
+    StmtPtr parallelStatement();
+    StmtPtr exportStatement();
 
     ExprPtr expression();
+    ExprPtr assignment();
+    ExprPtr or_expr();
+    ExprPtr and_expr();
     ExprPtr equality();
     ExprPtr comparison();
     ExprPtr term();
     ExprPtr factor();
     ExprPtr unary();
     ExprPtr primary();
-
-    ExprPtr assignment();
+    ExprPtr call();
+    ExprPtr finishCall(ExprPtr callee);
+    ExprPtr array();
+    ExprPtr ternary();
+    ExprPtr lambda();
 
     ExprPtr sysQuery();
 };
