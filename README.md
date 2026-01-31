@@ -2,7 +2,7 @@
 
 KIO is an ultra-fast, modern, lightweight programming language designed for high-performance computation, parallel workloads, and JIT-enabled execution. It combines the simplicity of Python/JavaScript with the speed of C++/Rust.
 
-![KIO Logo](docs/image.jpg)
+<img src="docs/image.jpg" alt="KIO Logo" width="150"/>
 
 ---
 
