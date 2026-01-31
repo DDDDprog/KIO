@@ -1,29 +1,45 @@
 import "examples/lib_constants.kio";
 
 function heavy_computation(n) {
-    let result = 0;
+    let result = 0.0;
     for i in range(n) {
         result = result + math.sqrt(i) * math.sin(i);
     }
     return result;
 }
 
-// Sequential execution
-let start = sys "time";
-let seq1 = heavy_computation(1000000);
-let seq2 = heavy_computation(1000000);
-let seq3 = heavy_computation(1000000);
-let sequential_time = (sys "time") - start;
+// -------- Warm-up --------
+heavy_computation(500000);  // warms up JIT / caches
 
-// Parallel execution
+// -------- Sequential execution --------
+let start = sys("time");
+
+let s1 = heavy_computation(5000000);
+let s2 = heavy_computation(5000000);
+let s3 = heavy_computation(5000000);
+
+let sequential_time = sys("time") - start;
+
+// -------- Parallel execution --------
+let p1 = 0.0;
+let p2 = 0.0;
+let p3 = 0.0;
+
 start = sys("time");
-parallel {
-    let par1 = heavy_computation(1000000);
-    let par2 = heavy_computation(1000000);
-    let par3 = heavy_computation(1000000);
-}
-let parallel_time = (sys "time") - start;
 
-print("Sequential time: " + sequential_time + "ms");
-print("Parallel time: " + parallel_time + "ms");
-print("Speedup: " + (sequential_time / parallel_time) + "x");
+parallel {
+    p1 = heavy_computation(5000000);
+    p2 = heavy_computation(5000000);
+    p3 = heavy_computation(5000000);
+}
+
+let parallel_time = sys("time") - start;
+
+// -------- Prevent compiler optimization --------
+let checksum = s1 + s2 + s3 + p1 + p2 + p3;
+
+// -------- Output --------
+print("Sequential time: " + sequential_time + " ms");
+print("Parallel time:   " + parallel_time + " ms");
+print("Speedup:         " + (sequential_time / parallel_time) + "x");
+print("Checksum:        " + math.round(checksum, 6));

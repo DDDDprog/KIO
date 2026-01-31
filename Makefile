@@ -21,7 +21,11 @@ configure:
 		-DCMAKE_INSTALL_PREFIX=$(INSTALL_PREFIX) \
 		-DKIO_BUILD_LSP=ON \
 		-DKIO_ENABLE_JIT=ON \
+<<<<<<< HEAD
 		-DKIO_ENABLE_PARALLEL=ON\
+=======
+		-DKIO_ENABLE_PARALLEL=ON \
+>>>>>>> 202e6ff (Add install script, update Makefile, modify parallel_test.kio)
 		-DKIO_ENABLE_LTO=ON \
 		-DKIO_ENABLE_NATIVE_ARCH=ON \
 		-DKIO_ENABLE_FAST_MATH=ON
