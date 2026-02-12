@@ -1,0 +1,24 @@
+// Tracing JIT Benchmark - Floating Point Math
+print "=== Tracing JIT Vectorization Benchmark ===";
+
+fn benchmark() {
+    let start = sys "time";
+    let x = 1.1;
+    let y = 2.2;
+    let z = 3.3;
+    let result = 0.0;
+    let i = 0;
+
+    while (i < 50000000) {
+        result = result + (x * y) - (z / x);
+        x = x + 0.00001;
+        i = i + 1;
+    }
+
+    let end = sys "time";
+    print "Iterations: 50,000,000";
+    print "Values: " + x + ", " + result;
+    print "Time: " + (end - start) + "ms";
+}
+
+benchmark();

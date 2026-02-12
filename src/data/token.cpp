@@ -15,6 +15,14 @@ std::string tokenTypeToString(TokenType type) {
         case TokenType::RIGHT_PAREN: return "RIGHT_PAREN";
         case TokenType::LEFT_BRACE: return "LEFT_BRACE";
         case TokenType::RIGHT_BRACE: return "RIGHT_BRACE";
+        case TokenType::LEFT_BRACKET: return "LEFT_BRACKET";
+        case TokenType::RIGHT_BRACKET: return "RIGHT_BRACKET";
+        case TokenType::ARROW: return "ARROW";
+        case TokenType::FROM: return "FROM";
+        case TokenType::MODULE: return "MODULE";
+        case TokenType::EXPORT: return "EXPORT";
+        case TokenType::PARALLEL: return "PARALLEL";
+        case TokenType::IN: return "IN";
         case TokenType::PLUS: return "PLUS";
         case TokenType::MINUS: return "MINUS";
         case TokenType::STAR: return "STAR";

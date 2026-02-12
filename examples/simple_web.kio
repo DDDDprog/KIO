@@ -1,0 +1,18 @@
+// Simplified KIO Web Server
+print "Starting KIO Web Server...";
+let port = 8080;
+let server = server_init(port);
+
+while (true) {
+    let req = server_accept(server);
+    if (len(req) > 0) {
+        let fd = req[0];
+        let method = req[1];
+        let path = req[2];
+        
+        print "Request: " + method + " " + path;
+        
+        let response = "<html><body><h1>KIO Web Server</h1><p>Served by KIO itself!</p></body></html>";
+        server_respond(fd, 200, "text/html", response);
+    }
+}

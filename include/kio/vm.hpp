@@ -6,6 +6,8 @@ SPDX-License-Identifier: GPL-3.0-only
 #pragma once
 
 #include "kio/bytecode.hpp"
+#include "kio/builtin_functions.hpp"
+#include "kio/jit_engine.hpp"
 #include <vector>
 #include <unordered_map>
 
@@ -42,9 +44,16 @@ private:
     Value stack_[STACK_MAX];
     int sp;
     std::unordered_map<std::string, Value> globals_;
+    
+    BuiltinFunctions builtins_;
+    JITEngine jit_;
+    std::unordered_map<uint8_t*, JITEngine::CompiledLoop> optimized_loops_;
 
     InterpretResult run();
     bool isTruthy(Value v);
+
+    std::unordered_map<uint8_t*, int> loop_hits_;
+    static constexpr int HOT_THRESHOLD = 5000;
 };
 
 } // namespace kio

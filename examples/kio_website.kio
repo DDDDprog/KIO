@@ -1,0 +1,68 @@
+// =============================================================
+// KIO NATIVE WEB ENGINE - OFFICIAL WEBSITE
+// =============================================================
+// No Javascript. No External Frameworks. Just KIO.
+
+print "Initializing KIO Native Web Server...";
+
+port = 8080;
+server = server_init(port);
+
+if (server == -1) {
+    print "CRITICAL: Could not bind to port " + port;
+    halt;
+}
+
+print "KIO Web Server is now LIVE at http://localhost:" + port;
+
+while (true) {
+    req = server_accept(server);
+    if (len(req) > 0) {
+        fd = req[0];
+        method = req[1];
+        path = req[2];
+        raw = req[3];
+        
+        print "[" + method + "] " + path;
+
+        // Header and Style
+        html = "<!DOCTYPE html><html><head><title>KIO Language</title>";
+        html = html + "<meta name='viewport' content='width=device-width, initial-scale=1'>";
+        html = html + "<style>";
+        html = html + "body { background: #020617; color: #f8fafc; font-family: 'Inter', system-ui, sans-serif; margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; overflow-x: hidden; }";
+        html = html + ".card { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1); border-radius: 2rem; padding: 4rem; max-width: 800px; width: 90%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); position: relative; }";
+        html = html + "h1 { font-size: 5rem; font-weight: 900; margin: 0; background: linear-gradient(135deg, #38bdf8, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -3px; }";
+        html = html + "p { font-size: 1.25rem; color: #94a3b8; line-height: 1.6; margin: 2rem 0; }";
+        html = html + ".feature-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 3rem; }";
+        html = html + ".feature { background: rgba(255,255,255,0.03); padding: 1.5rem; border-radius: 1rem; border: 1px solid rgba(255,255,255,0.05); }";
+        html = html + ".feature h3 { color: #38bdf8; margin: 0 0 0.5rem 0; font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; }";
+        html = html + ".feature p { font-size: 0.9rem; margin: 0; color: #64748b; }";
+        html = html + ".badge { position: absolute; top: 2rem; right: 2rem; padding: 0.5rem 1rem; background: #0ea5e9; color: #fff; font-size: 0.7rem; font-weight: 800; border-radius: 999px; text-transform: uppercase; }";
+        html = html + ".footer { margin-top: 4rem; font-size: 0.8rem; color: #475569; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 2rem; display: flex; justify-content: space-between; }";
+        html = html + ".btn { display: inline-block; padding: 1rem 2rem; background: #38bdf8; color: #020617; text-decoration: none; font-weight: 700; border-radius: 0.75rem; margin-top: 1rem; transition: transform 0.2s; }";
+        html = html + ".btn:hover { transform: translateY(-2px); }";
+        html = html + "</style></head><body>";
+
+        // Content
+        html = html + "<div class='card'>";
+        html = html + "<div class='badge'>Native Engine v2.1</div>";
+        html = html + "<h1>KIO</h1>";
+        html = html + "<p>A breakthrough in system computation. KIO delivers high-performance bytecode execution with a modern, elegant syntax. Built for GPUs, servers, and the next generation of software.</p>";
+        
+        html = html + "<div class='feature-grid'>";
+        html = html + "<div class='feature'><h3>Lightning Fast</h3><p>Optimized VM core with advanced stack management.</p></div>";
+        html = html + "<div class='feature'><h3>GPU Native</h3><p>Direct integration with AMD ROCm and hardware acceleration.</p></div>";
+        html = html + "<div class='feature'><h3>No Dependencies</h3><p>Self-contained runtime. Ready for deployment anywhere.</p></div>";
+        html = html + "<div class='feature'><h3>Web Integrated</h3><p>Full HTTP server capabilities out of the box.</p></div>";
+        html = html + "</div>";
+
+        html = html + "<div class='footer'>";
+        html = html + "<span>Current Path: " + path + "</span>";
+        html = html + "<span>Runtime: " + sys "os_name" + " (" + sys "arch" + ")</span>";
+        html = html + "</div>";
+        
+        html = html + "</div></body></html>";
+
+        server_respond(fd, 200, "text/html", html);
+    }
+}

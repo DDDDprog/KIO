@@ -10,8 +10,8 @@ import shutil
 def build():
     print("🔥 Building KIO Ultra-Fast Engine...")
     
-    if not os.path.exists("build_final"):
-        os.makedirs("build")
+    if not os.path.exists("build"):
+        os.makedirs("build", exist_ok=True)
     
     os.chdir("build")
     
@@ -22,7 +22,7 @@ def build():
         "-DKIO_ENABLE_LTO=ON",
         "-DKIO_ENABLE_NATIVE_ARCH=ON",
         "-DKIO_ENABLE_FAST_MATH=ON",
-        "-DKIO_ENABLE_JIT=OFF",
+        "-DKIO_ENABLE_JIT=ON",
         "-DKIO_BUILD_LSP=OFF"
     ]
     

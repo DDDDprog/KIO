@@ -35,21 +35,17 @@ struct Value {
         Obj* obj;
     } as;
 
-    Value() : type(ValueType::VAL_NIL) {}
-    Value(double n) : type(ValueType::VAL_NUMBER) { as.number = n; }
-    Value(bool b) : type(ValueType::VAL_BOOL) { as.boolean = b; }
-    Value(Obj* o) : type(ValueType::VAL_OBJ) { as.obj = o; }
+    Value();
+    Value(double n);
+    Value(bool b);
+    Value(Obj* o);
+    Value(const std::string& s);
+    Value(const char* s);
 
-    bool operator==(const Value& other) const {
-        if (type != other.type) return false;
-        switch (type) {
-            case ValueType::VAL_NIL: return true;
-            case ValueType::VAL_BOOL: return as.boolean == other.as.boolean;
-            case ValueType::VAL_NUMBER: return as.number == other.as.number;
-            case ValueType::VAL_OBJ: return as.obj == other.as.obj;
-            default: return false;
-        }
-    }
+    double toNumber() const;
+    std::string toString() const;
+
+    bool operator==(const Value& other) const;
 };
 
 static inline bool isNumber(Value v) { return v.type == ValueType::VAL_NUMBER; }

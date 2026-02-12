@@ -106,6 +106,17 @@ Value Interpreter::evaluate(const ExprPtr &expr) {
         }
         if constexpr (std::is_same_v<T, Expr::SysQuery>) {
             if (node.key == "time") return doubleToValue(std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now().time_since_epoch()).count());
+            if (node.key == "os_name") {
+#ifdef _WIN32
+                return objToValue(new ObjString("Windows"));
+#elif __APPLE__
+                return objToValue(new ObjString("macOS"));
+#else
+                return objToValue(new ObjString("Linux"));
+#endif
+            }
+            if (node.key == "arch") return objToValue(new ObjString("x64"));
+            if (node.key == "kio_version") return objToValue(new ObjString("2.1.0"));
             return NIL_VAL;
         }
         return NIL_VAL;

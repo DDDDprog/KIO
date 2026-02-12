@@ -36,7 +36,10 @@ static void run(const std::string &source, VM& vm) {
 
         Compiler compiler;
         Chunk* chunk = compiler.compile(statements);
-        vm.interpret(chunk);
+        InterpretResult result = vm.interpret(chunk);
+        if (result == InterpretResult::RUNTIME_ERROR) {
+            std::cerr << "VM Runtime Error!" << std::endl;
+        }
         delete chunk;
     } catch (const std::exception &e) {
         std::cerr << "Error: " << e.what() << "\n";

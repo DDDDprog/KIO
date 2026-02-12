@@ -1,0 +1,56 @@
+// KIO Feature Showcase: Crypto, GPU, GUI, Vector, and BigInt
+print "--- KIO Advanced Features Demo ---";
+
+// 1. Vectorized Operations
+print "Testing Vectorized Operations...";
+let v1 = [1.0, 2.0, 3.0];
+let v2 = [4.0, 5.0, 6.0];
+let res = [0.0, 0.0, 0.0];
+
+vec_add(v1, v2, res);
+print "Vector Add Result:";
+print res;
+
+let dot = vec_dot(v1, v2);
+print "Vector Dot Product:";
+print dot;
+
+// 2. Crypto Features
+print "Testing Crypto Features...";
+let secret = "KIO_SECRET_DATA";
+let key = "MY_KEY_123";
+
+let encrypted = aes_encrypt(secret, key);
+print "AES Encrypted:";
+print encrypted;
+
+let decrypted = aes_decrypt(encrypted, key);
+print "AES Decrypted:";
+print decrypted;
+
+let hashed = sha256(secret);
+print "SHA256 Hash:";
+print hashed;
+
+// 3. GPU/rocSHMEM Features
+print "Testing GPU Features...";
+gpu_init();
+let gpu_ptr = gpu_malloc(1024);
+print "GPU Pointer allocated at:";
+print gpu_ptr;
+gpu_sync();
+
+// 4. GUI Features
+print "Testing GUI Features...";
+gui_window("KIO Advanced Demo", 800, 600);
+gui_button("Click Me!");
+
+// 5. BigInt (GMP)
+print "Testing BigInt (GMP)...";
+let b1 = "123456789012345678901234567890";
+let b2 = "987654321098765432109876543210";
+let b_sum = bigint_add(b1, b2);
+print "BigInt Sum:";
+print b_sum;
+
+print "--- Demo Complete ---";

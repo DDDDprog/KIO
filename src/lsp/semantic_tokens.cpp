@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2025 Dipanjan Dhar
+Copyright (c) 2026 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
