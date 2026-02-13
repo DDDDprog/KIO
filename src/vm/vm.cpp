@@ -133,7 +133,10 @@ InterpretResult VM::run() {
             case OpCode::SUBTRACT: {
                 Value r = stack_[--sp];
                 Value l = stack_[--sp];
-                stack_[sp++] = Value(asm_sub_double(l.as.number, r.as.number));
+                // Use plain subtraction to avoid any inline-assembly issues.
+                double lhs = l.as.number;
+                double rhs = r.as.number;
+                stack_[sp++] = Value(lhs - rhs);
                 break;
             }
             case OpCode::MULTIPLY: {

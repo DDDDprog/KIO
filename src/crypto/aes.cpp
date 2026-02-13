@@ -17,8 +17,15 @@ Value native_crypto_aes_encrypt(int argCount, Value* args) {
     std::string data = args[0].toString();
     std::string key = args[1].toString();
     
+    // Safety: avoid modulo-by-zero and degenerate keys.
+    if (key.empty()) {
+        // With an empty key, return the input unchanged rather than
+        // invoking undefined behavior.
+        return objToValue(new ObjString(data));
+    }
+    
     std::string result = data;
-    for(size_t i = 0; i < result.length(); ++i) {
+    for (size_t i = 0; i < result.length(); ++i) {
         result[i] ^= key[i % key.length()];
     }
     

@@ -1,0 +1,248 @@
+(* KIO Language Grammar (EBNF) – derived from src/tokenizer/lexer.cpp and src/parser/parser.cpp *)
+
+(* ---------------------------------------------------------------------- *)
+(* Lexical structure                                                      *)
+(* ---------------------------------------------------------------------- *)
+
+letter        = "A" … "Z" | "a" … "z" | "_" ;
+digit         = "0" … "9" ;
+
+identifier    = letter , { letter | digit } ;
+
+number        = digit , { digit } , [ "." , { digit } ] ;
+
+esc_char      = "\" , ( "n" | "t" | "r" | "\"" | "'" | "\" | any-char ) ;
+
+char_literal  = "'" , ( esc_char | any-char-except-quote-or-backslash ) , "'" ;
+
+string_literal =
+    "\"" , { ( "\"\"" ) | ( "\" , esc_char ) | ( any-char-except-quote ) } , "\"" ;
+
+raw_string_literal =
+    "r" , "\"" , { any-char-except-quote } , "\"" ;
+
+comment       = "//" , { any-char-except-newline } , newline
+              | "#"  , { any-char-except-newline } , newline ;
+
+whitespace    = " " | "\t" | "\r" | newline ;
+
+(* The lexer also recognizes an INVALID token for malformed input; that is
+   intentionally omitted here. *)
+
+(* ---------------------------------------------------------------------- *)
+(* Program structure                                                       *)
+(* ---------------------------------------------------------------------- *)
+
+program       = { declaration } , EOF ;
+
+declaration   = var_decl
+              | const_decl
+              | function_decl
+              | class_decl
+              | namespace_decl
+              | module_decl
+              | export_decl
+              | statement ;
+
+var_decl      = "let" , identifier , [ ":" , identifier ] ,
+                "=" , expression , ";" ;
+
+const_decl    = "const" , identifier , [ ":" , identifier ] ,
+                "=" , expression , ";" ;
+
+function_decl =
+    "function" , identifier ,
+    "(" , [ param_list ] , ")" ,
+    [ ":" , identifier ] ,
+    block ;
+
+param_list    = param , { "," , param } ;
+param         = identifier , [ ":" , identifier ] ;
+
+class_decl    =
+    "class" , identifier , [ ":" , identifier ] ,
+    "{" , { declaration } , "}" ;
+
+namespace_decl =
+    "namespace" , identifier ,
+    "{" , { declaration } , "}" ;
+
+module_decl   =
+    "module" , identifier ,
+    "{" , { declaration } , "}" ;
+
+export_decl   = "export" , declaration ;
+
+(* ---------------------------------------------------------------------- *)
+(* Statements                                                              *)
+(* ---------------------------------------------------------------------- *)
+
+statement     = print_stmt
+              | if_stmt
+              | while_stmt
+              | for_stmt
+              | switch_stmt
+              | try_stmt
+              | throw_stmt
+              | break_stmt
+              | continue_stmt
+              | return_stmt
+              | save_stmt
+              | load_stmt
+              | import_stmt
+              | parallel_stmt
+              | block
+              | expr_stmt ;
+
+block         = "{" , { declaration } , "}" ;
+
+print_stmt    = "print" , expression , ";" ;
+
+if_stmt       = "if" , "(" , expression , ")" ,
+                statement ,
+                [ "else" , statement ] ;
+
+while_stmt    = "while" , "(" , expression , ")" , statement ;
+
+(* Two forms of for-loop are supported:
+   - for i in expr statement
+   - for ( initializer? ; condition? ; increment? ) statement *)
+
+for_stmt      = "for" ,
+                ( for_in_suffix | for_c_suffix ) ;
+
+for_in_suffix =
+    identifier , "in" , expression , statement ;
+
+for_c_suffix  =
+    "(" ,
+      [ for_initializer ] , ";" ,
+      [ expression ]      , ";" ,
+      [ expression ] ,
+    ")" ,
+    statement ;
+
+for_initializer =
+      "let" , var_decl_tail
+    | expr_stmt_no_semi ;
+
+var_decl_tail = identifier , [ ":" , identifier ] ,
+                "=" , expression ;
+
+switch_stmt   =
+    "switch" , "(" , expression , ")" ,
+    "{" ,
+      { "case" , expression , ":" , { statement } } ,
+      [ "default" , ":" , { statement } ] ,
+    "}" ;
+
+try_stmt      =
+    "try" , block ,
+    [ "catch" , "(" , identifier , ")" , block ] ,
+    [ "finally" , block ] ;
+
+throw_stmt    = "throw" , expression , ";" ;
+
+break_stmt    = "break" , ";" ;
+
+continue_stmt = "continue" , ";" ;
+
+return_stmt   = "return" , [ expression ] , ";" ;
+
+save_stmt     = "save" , string_literal , ";" ;
+
+load_stmt     = "load" , string_literal , ";" ;
+
+import_stmt   =
+      "import" , identifier , "from" , string_literal , ";"
+    | "import" , string_literal , ";" ;
+
+parallel_stmt =
+    "parallel" , block ;
+
+expr_stmt     = expression , ";" ;
+
+(* helper for for-in initializer without trailing ';' *)
+expr_stmt_no_semi = expression ;
+
+(* ---------------------------------------------------------------------- *)
+(* Expressions                                                             *)
+(* ---------------------------------------------------------------------- *)
+
+expression    = assignment ;
+
+assignment    =
+    ( assignable , assign_op , assignment )
+  | or_expr ;
+
+assignable    =
+      identifier
+    | call_expr , "." , identifier
+    | call_expr , "[" , expression , "]" ;
+
+assign_op     = "=" | "+=" | "-=" | "*=" | "/=" ;
+
+or_expr       = and_expr , { "||" , and_expr } ;
+
+and_expr      = equality , { "&&" , equality } ;
+
+equality      = comparison , { ( "==" | "!=" ) , comparison } ;
+
+comparison    = term , { ( ">" | ">=" | "<" | "<=" ) , term } ;
+
+term          = factor , { ( "+" | "-" ) , factor } ;
+
+factor        = unary , { ( "*" | "/" | "%" ) , unary } ;
+
+unary         =
+      "sys" , sys_suffix
+    | ( "!" | "-" ) , unary
+    | post_expr ;
+
+sys_suffix    =
+      "(" , string_literal , ")"
+    | string_literal ;
+
+post_expr     =
+    call_expr , [ "++" | "--" ] ;
+
+call_expr     =
+    primary , { call_tail } ;
+
+call_tail     =
+      "(" , [ argument_list ] , ")"
+    | "." , identifier
+    | "[" , expression , "]" ;
+
+argument_list = expression , { "," , expression } ;
+
+primary       =
+      number
+    | string_literal
+    | raw_string_literal
+    | char_literal
+    | "true"
+    | "false"
+    | "nil"
+    | "this"
+    | identifier
+    | "(" , expression , ")"
+    | array_literal ;
+
+array_literal =
+    "[" , [ expression , { "," , expression } ] , "]" ;
+
+(* ---------------------------------------------------------------------- *)
+(* Notes                                                                   *)
+(* ---------------------------------------------------------------------- *)
+
+(* 1. The parser also defines a ternary operator helper:
+       ternary  = or_expr , [ "?" , expression , ":" , ternary ] ;
+     which currently is not wired as the top-level expression rule.
+     The above grammar reflects the behavior of src/parser/parser.cpp
+     as of 2026; ternary support should be treated as experimental. *)
+
+(* 2. Additional constructs (classes, interfaces, access modifiers, etc.)
+     have partial support in the AST and lexer, and will be formalized in
+     future revisions of this grammar. *)
+

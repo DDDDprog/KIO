@@ -90,12 +90,14 @@ static inline void asm_mul_array_double(double* dst, const double* src, size_t c
 }
 
 // Prefetch hints for better cache utilization
-static inline void asm_prefetch(const void* ptr, int locality = 3) {
-    __builtin_prefetch(ptr, 0, locality);
+// NOTE: Clang requires the locality argument to be a compile-time constant,
+// so we hard-code a high-locality value (3) rather than taking it as a parameter.
+static inline void asm_prefetch(const void* ptr) {
+    __builtin_prefetch(ptr, 0, 3);
 }
 
-static inline void asm_prefetch_write(const void* ptr, int locality = 3) {
-    __builtin_prefetch(ptr, 1, locality);
+static inline void asm_prefetch_write(const void* ptr) {
+    __builtin_prefetch(ptr, 1, 3);
 }
 
 // Memory barrier for thread safety

@@ -95,13 +95,22 @@ Value Interpreter::evaluate(const ExprPtr &expr) {
                     if (isNumber(left) && isNumber(right)) return doubleToValue(valueToDouble(left) + valueToDouble(right));
                     if (isObj(left) && isObj(right)) return objToValue(new ObjString(((ObjString*)valueToObj(left))->chars + ((ObjString*)valueToObj(right))->chars));
                     return NIL_VAL;
-                case TokenType::MINUS: return doubleToValue(asNumber(left) - asNumber(right));
-                case TokenType::STAR: return doubleToValue(asNumber(left) * asNumber(right));
-                case TokenType::SLASH: return doubleToValue(asNumber(left) / asNumber(right));
-                case TokenType::LESS: return BOOL_VAL(asNumber(left) < asNumber(right));
-                case TokenType::GREATER: return BOOL_VAL(asNumber(left) > asNumber(right));
-                case TokenType::EQUAL_EQUAL: return BOOL_VAL(left == right);
-                default: return NIL_VAL;
+                case TokenType::MINUS:
+                    return doubleToValue(asNumber(left) - asNumber(right));
+                case TokenType::STAR:
+                    return doubleToValue(asNumber(left) * asNumber(right));
+                case TokenType::SLASH:
+                    return doubleToValue(asNumber(left) / asNumber(right));
+                case TokenType::PERCENT:
+                    return doubleToValue(std::fmod(asNumber(left), asNumber(right)));
+                case TokenType::LESS:
+                    return BOOL_VAL(asNumber(left) < asNumber(right));
+                case TokenType::GREATER:
+                    return BOOL_VAL(asNumber(left) > asNumber(right));
+                case TokenType::EQUAL_EQUAL:
+                    return BOOL_VAL(left == right);
+                default:
+                    return NIL_VAL;
             }
         }
         if constexpr (std::is_same_v<T, Expr::SysQuery>) {

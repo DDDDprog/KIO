@@ -1,0 +1,18 @@
+// Simple Benchmark for KIO vs Java comparison
+
+print "=== KIO Simple Benchmark ===";
+
+let start = sys "time";
+let sum = 0;
+let i = 0;
+let total = 1000000;
+
+while (i < total) {
+    sum = sum + i;
+    i = i + 1;
+}
+
+let end = sys "time";
+print "Sum: " + sum;
+print "Time: " + (end - start) + " ms";
+

@@ -116,6 +116,7 @@ add_library(kio_core
     src/gpu/gpu_bridge.cpp
     src/gui/gui_bridge.cpp
     src/network/http_server.cpp
+    c_core/abi.cpp
 )
 
 if(KIO_ENABLE_JIT)
@@ -125,6 +126,11 @@ if(KIO_ENABLE_JIT)
     )
     target_link_libraries(kio_core PRIVATE ${llvm_libs})
     target_compile_definitions(kio_core PRIVATE KIO_JIT_ENABLED)
+else()
+    # When JIT is disabled, provide a lightweight stub so the VM still links.
+    target_sources(kio_core PRIVATE
+        src/features/jit_engine_stub.cpp
+    )
 endif()
 
 # Optionally include LSP sources when enabled
