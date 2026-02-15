@@ -1,4 +1,0 @@
-// lib_constants.kio
-let PI = 3.14159;
-let E = 2.71828;
-let APP_NAME = "KIO Demo";

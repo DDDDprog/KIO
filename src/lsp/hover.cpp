@@ -3,7 +3,7 @@ Copyright (c) 2025 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/lsp/hover.hpp"
+#include "axeon/lsp/hover.hpp"
 #include <sstream>
 
 namespace kio::lsp {

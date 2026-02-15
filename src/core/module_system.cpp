@@ -3,7 +3,7 @@ Copyright (c) 2026 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/module_system.hpp"
+#include "axeon/module_system.hpp"
 #include <filesystem>
 #include <fstream>
 #include <iostream>

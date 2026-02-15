@@ -3,7 +3,7 @@
  SPDX-License-Identifier: GPL-3.0-only
  */
 
-#include "kio/jit_engine.hpp"
+#include "axeon/jit_engine.hpp"
 #ifdef KIO_JIT_ENABLED
 #include <llvm/IR/LLVMContext.h>
 #include <llvm/IR/Module.h>
@@ -120,6 +120,8 @@ JITEngine::CompiledLoop JITEngine::compileLoop(Chunk* chunk, uint8_t* startIp) {
         }
     }
     
+    if (limit <= 0) return nullptr;
+    
     max_slot += 2; 
 
     auto M = std::make_unique<llvm::Module>("kio_jit_module", *impl_->context);
@@ -169,16 +171,6 @@ JITEngine::CompiledLoop JITEngine::compileLoop(Chunk* chunk, uint8_t* startIp) {
     builder.CreateBr(loopBodyBB);
     builder.SetInsertPoint(loopBodyBB);
 
-    llvm::SmallVector<llvm::Metadata*, 4> loopMetadata;
-    llvm::LLVMContext& ctx = *impl_->context;
-    llvm::TempMDTuple tempNode = llvm::MDNode::getTemporary(ctx, {});
-    loopMetadata.push_back(tempNode.get());
-    loopMetadata.push_back(llvm::MDNode::get(ctx, { 
-        llvm::MDString::get(ctx, "llvm.loop.unroll.enable") 
-    }));
-    llvm::MDNode* loopID = llvm::MDNode::get(ctx, loopMetadata);
-    tempNode->replaceAllUsesWith(loopID);
-    
     std::vector<llvm::Value*> simStack;
 
     uint8_t* ip = startIp;
@@ -252,8 +244,7 @@ JITEngine::CompiledLoop JITEngine::compileLoop(Chunk* chunk, uint8_t* startIp) {
             }
             case OpCode::LOOP: {
                 ip += 2;
-                auto br = builder.CreateBr(loopBodyBB);
-                br->setMetadata(llvm::LLVMContext::MD_loop, loopID);
+                builder.CreateBr(loopBodyBB);
                 compiling = false;
                 break;
             }

@@ -3,7 +3,7 @@ Copyright (c) 2025 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/lsp/lsp_server.hpp"
+#include "axeon/lsp/lsp_server.hpp"
 #include <iostream>
 #include <sstream>
 #include <algorithm>

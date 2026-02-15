@@ -3,7 +3,7 @@ Copyright (c) 2026 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/lsp/document_manager.hpp"
+#include "axeon/lsp/document_manager.hpp"
 #include <fstream>
 #include <sstream>
 #include <optional>

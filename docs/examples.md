@@ -1,4 +1,4 @@
-## KIO by Example (Snapshot 2026)
+## Axeon  by Example (Snapshot 2026)
 
 This file contains small, self-contained examples that exercise the current KIO language and runtime. They are aligned with the grammar in `docs/grammar/kio.ebnf` and the implementation in `src/`.
 

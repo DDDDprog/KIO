@@ -1,0 +1,18 @@
+// Simple Benchmark for Axeon vs Java comparison
+
+print "=== Axeon Simple Benchmark ===";
+
+let sum = 0;
+let i = 0;
+
+let start = sys "time";
+
+while (i < 100000) {
+    sum = sum + i;
+    i = i + 1;
+}
+
+let end = sys "time";
+
+print "Sum: " + sum;
+print "Time: " + (end - start) + "ms";

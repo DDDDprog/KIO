@@ -1,0 +1,13 @@
+// Simplified Axeon Web Server
+print "Starting Axeon Web Server...";
+let port = 8080;
+
+let fd = 0;
+let ready = sys "listen";
+
+if (ready) {
+    print "Server ready on port " + port;
+    
+    let response = "<html><body><h1>Axeon Web Server</h1><p>Served by Axeon itself!</p></body></html>";
+    server_respond(fd, 200, "text/html", response);
+}

@@ -1,0 +1,24 @@
+// Axeon Comprehensive Test
+print "--- Axeon Programming Language Test ---";
+
+let x = 10;
+let y = 20;
+let z = x + y;
+
+print "x = " + x;
+print "y = " + y;
+print "x + y = " + z;
+
+if (z > 25) {
+    print "z is greater than 25";
+} else {
+    print "z is not greater than 25";
+}
+
+let i = 0;
+while (i < 5) {
+    print i;
+    i = i + 1;
+}
+
+print "Test complete!";

@@ -1,6 +1,6 @@
 /*
 Copyright (c) 2026 Dipanjan Dhar
-SPDX-License-Identifier: GPL-3.0-only
+SPDX-License-Identifier: Zeo-3.0-only
 */
 
 #include <filesystem>
@@ -10,11 +10,11 @@ SPDX-License-Identifier: GPL-3.0-only
 #include <string>
 #include <cstdlib>
 #include <iomanip>
-#include "kio/lexer.hpp"
-#include "kio/parser.hpp"
-#include "kio/vm.hpp"
-#include "kio/compiler.hpp"
-#include "kio/interpreter.hpp"
+#include "axeon/lexer.hpp"
+#include "axeon/parser.hpp"
+#include "axeon/vm.hpp"
+#include "axeon/compiler.hpp"
+#include "axeon/interpreter.hpp"
 
 using namespace kio;
 
@@ -24,7 +24,7 @@ enum class EngineMode {
 };
 
 static EngineMode parseEngineFromEnv() {
-    const char* env = std::getenv("KIO_ENGINE");
+    const char* env = std::getenv("AXEON_ENGINE");
     if (!env) return EngineMode::VM;
     std::string v(env);
     if (v == "interp" || v == "interpreter") return EngineMode::INTERPRETER;
@@ -79,11 +79,14 @@ static void printLogo() {
     const char *cyan = std::getenv("NO_COLOR") ? "" : "\x1b[36m";
     const char *reset = std::getenv("NO_COLOR") ? "" : "\x1b[0m";
     std::cout << cyan;
-    std::cout << "╦╔═╦╔═╗\n";
-    std::cout << "╠╩╗║║ ║\n";
-    std::cout << "╩ ╩╩╚═╝\n";
+    std::cout << "    ▄▄▄      ▒██   ██▒▓█████  ▒█████   ███▄    █\n";
+    std::cout << "  ▒████▄     ▒▒ █ █ ▒░▓█   ▀ ▒██▒  ██▒ ██ ▀█   █\n";
+    std::cout << "  ▒██  ▀█▄   ░░  █   ░▒███   ▒██░  ██▒▓██  ▀█ ██▒\n";
+    std::cout << "  ░██▄▄▄▄██   ░ █ █ ▒ ▒▓█  ▄ ▒██   ██░▓██▒  ▐▌██▒\n";
+    std::cout << "   ▓█   ▓██▒ ▒██▒ ▒██▒░▒████▒░ ████▓▒░▒██░   ▓██░\n";
+    std::cout << "   ▒▒   ▓▒█░ ▒▒ ░ ░▓ ░░░ ▒░ ░░ ▒░▒░▒░ ░ ▒░   ▒ ▒ \n";
     std::cout << reset;
-    std::cout << "KIO 2.0.0\n";
+    std::cout << "              AXEON LANG\n";
     std::cout << "Type :help for commands, :quit to exit\n\n";
 }
 

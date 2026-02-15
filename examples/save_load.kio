@@ -1,7 +1,0 @@
-let x = 7;
-let msg = "hi";
-save "state.json";
-x = 0;
-load "state.json";
-print x;
-print msg;

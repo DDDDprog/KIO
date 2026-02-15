@@ -1,0 +1,109 @@
+{
+  "name": "axeon-language",
+  "displayName": "Axeon Language Support",
+  "description": "VS Code extension for Axeon programming language - syntax highlighting, IntelliSense, and more",
+  "version": "1.0.1",
+  "icon": "icon.jpg",
+  "main": "./out/extension.js",
+  "publisher": "axeon",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "activationEvents": [
+    "onLanguage:axeon",
+    "workspaceContains:**/*.axe",
+    "workspaceContains:**/*.ko"
+  ],
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "axeon",
+        "aliases": [
+          "Axeon",
+          "axeon"
+        ],
+        "extensions": [
+          ".axe",
+          ".ko"
+        ],
+        "filenamePatterns": [
+          "*.axe",
+          "*.ko"
+        ],
+        "icon": {
+          "light": "icons/axeon-light.svg",
+          "dark": "icons/axeon-dark.svg"
+        },
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "axeon",
+        "scopeName": "source.axeon",
+        "path": "./syntaxes/axeon.tm.json"
+      }
+    ],
+    "iconThemes": [
+      {
+        "id": "axeon-icons",
+        "label": "Axeon Icons",
+        "path": "./icons/axeon-icon-theme.json"
+      }
+    ],
+    "themes": [
+      {
+        "label": "Axeon Monokai",
+        "uiTheme": "vs-dark",
+        "path": "./themes/axeon-monokai.json"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Axeon Language",
+      "properties": {
+        "axeon.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/disable Axeon language support"
+        },
+        "axeon.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages",
+            "verbose"
+          ],
+          "default": "off",
+          "description": "Traces the communication between VS Code and the language server."
+        }
+      }
+    },
+    "snippets": [
+      {
+        "language": "axeon",
+        "path": "./snippets/axeon.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.75.0",
+    "@vscode/test-electron": "^2.3.0",
+    "typescript": "^5.0.0",
+    "vsce": "^2.15.0"
+  },
+  "dependencies": {
+    "vscode-languageclient": "^8.1.0"
+  }
+}

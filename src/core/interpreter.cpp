@@ -3,7 +3,7 @@ Copyright (c) 2025 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/interpreter.hpp"
+#include "axeon/interpreter.hpp"
 #include <iostream>
 #include <stdexcept>
 #include <fstream>

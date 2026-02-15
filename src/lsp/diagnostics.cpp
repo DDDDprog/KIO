@@ -3,9 +3,9 @@ Copyright (c) 2025 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/lsp/diagnostics.hpp"
-#include "kio/lexer.hpp"
-#include "kio/parser.hpp"
+#include "axeon/lsp/diagnostics.hpp"
+#include "axeon/lexer.hpp"
+#include "axeon/parser.hpp"
 #include <sstream>
 
 namespace kio::lsp {

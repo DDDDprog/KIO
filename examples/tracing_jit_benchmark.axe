@@ -1,0 +1,20 @@
+// Axeon Tracing JIT Benchmark
+print "--- Axeon Tracing JIT Benchmark ---";
+
+let iterations = 5000000;
+let sum = 0;
+let i = 0;
+
+let start = sys "time";
+
+while (i < iterations) {
+    sum = sum + i;
+    i = i + 1;
+}
+
+let end = sys "time";
+
+print "Iterations: " + iterations;
+print "Final Sum: " + sum;
+print "Time (ms): " + (end - start);
+print "JIT Benchmark complete!";

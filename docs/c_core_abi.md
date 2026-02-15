@@ -1,4 +1,4 @@
-## KIO C Core ABI Design
+## C Core ABI Design
 
 This document specifies the **C-level ABI** for the future KIO C core. It is intentionally close to the existing C++ implementation, but:
 

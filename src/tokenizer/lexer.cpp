@@ -3,10 +3,10 @@ Copyright (c) 2025 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/lexer.hpp"
+#include "axeon/lexer.hpp"
 #include <cctype>
 #include <unordered_map>
-#include "kio/config.hpp"
+#include "axeon/config.hpp"
 
 namespace kio {
 

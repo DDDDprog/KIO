@@ -5,7 +5,7 @@ SPDX-License-Identifier: GPL-3.0-only
 
 #include <vector>
 #include <set>
-#include "kio/bytecode.hpp"
+#include "axeon/bytecode.hpp"
 
 namespace kio {
 

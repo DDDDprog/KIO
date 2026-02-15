@@ -3,7 +3,7 @@ Copyright (c) 2026 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/parser.hpp"
+#include "axeon/parser.hpp"
 #include <stdexcept>
 
 namespace kio {

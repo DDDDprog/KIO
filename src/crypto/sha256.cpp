@@ -3,7 +3,7 @@ Copyright (c) 2026 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/bytecode.hpp"
+#include "axeon/bytecode.hpp"
 #include <vector>
 #include <string>
 #include <iomanip>

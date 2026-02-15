@@ -1,0 +1,14 @@
+// Axeon GPU Puzzles: Leveraging ROCm and rocSHMEM
+print "--- Axeon GPU Puzzles ---";
+
+let data = [1, 2, 3, 4, 5];
+print "Array: " + data;
+
+let sum = 0;
+let i = 0;
+while (i < 5) {
+    sum = sum + data[i];
+    i = i + 1;
+}
+
+print "Sum: " + sum;

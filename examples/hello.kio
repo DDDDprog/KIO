@@ -1,3 +1,0 @@
-let x = 41 + 1;
-print x;
-print "kio";

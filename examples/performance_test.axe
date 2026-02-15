@@ -1,0 +1,23 @@
+// Axeon Performance Test
+print "--- Axeon Performance Test ---";
+
+let iterations = 1000000;
+let sum = 0;
+let i = 0;
+
+let start = sys "time";
+
+while (i < iterations) {
+    sum = sum + i * 2 + 1;
+    if (i % 1000 == 0) {
+        sum = sum - 1;
+    }
+    i = i + 1;
+}
+
+let end = sys "time";
+
+print "Iterations: " + iterations;
+print "Final Sum: " + sum;
+print "Time (ms): " + (end - start);
+print "Performance test complete!";

@@ -38,6 +38,8 @@ enum class OpCode : uint8_t {
     // TypeScript-like features
     TYPE_CHECK, 
     CONST_CHECK,
+    // Fast native loop opcode
+    FAST_LOOP,
     END_EOF
 };
 

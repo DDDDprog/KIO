@@ -1,0 +1,20 @@
+// Axeon Module System Test
+print "--- Axeon Module Test ---";
+
+// Import constants module
+import "lib_constants.axe";
+
+print "Testing import system:";
+print "PI = " + PI;
+print "E = " + E;
+print "APP_NAME = " + APP_NAME;
+
+// Test arithmetic
+let x = 10;
+let y = 20;
+print "x + y = " + (x + y);
+print "x - y = " + (x - y);
+print "x * y = " + (x * y);
+print "x / y = " + (x / y);
+
+print "Module test complete!";

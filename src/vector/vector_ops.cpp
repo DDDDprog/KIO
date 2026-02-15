@@ -7,7 +7,7 @@ SPDX-License-Identifier: GPL-3.0-only
 #include <immintrin.h>
 #include <cmath>
 #include <algorithm>
-#include "kio/bytecode.hpp"
+#include "axeon/bytecode.hpp"
 
 namespace kio {
 

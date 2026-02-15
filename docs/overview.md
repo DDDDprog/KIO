@@ -1,6 +1,6 @@
-# kio Overview
+# Axeon Overview
 
-kio is a tiny, fast, configurable language implemented in modern C++.
+Axeon is a tiny, fast, configurable language implemented in modern C++.
 
 Highlights
 - Minimal syntax: let, print, arithmetic, assignment, save/load

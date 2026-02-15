@@ -1,0 +1,117 @@
+{
+  "Function Definition": {
+    "prefix": "fn",
+    "body": "fn ${1:function_name}(${2:args}) {\n\t$0\n}",
+    "description": "Define a new function"
+  },
+  "Arrow Function": {
+    "prefix": "fn-arrow",
+    "body": "fn ${1:args} => ${2:expression}",
+    "description": "Define an arrow function"
+  },
+  "For Loop": {
+    "prefix": "for",
+    "body": "for ${1:i} in ${2:range(10)} {\n\t$0\n}",
+    "description": "For loop iteration"
+  },
+  "For Each Loop": {
+    "prefix": "foreach",
+    "body": "for ${1:item} in ${2:collection} {\n\t$0\n}",
+    "description": "For-each loop"
+  },
+  "While Loop": {
+    "prefix": "while",
+    "body": "while ${1:condition} {\n\t$0\n}",
+    "description": "While loop"
+  },
+  "If Statement": {
+    "prefix": "if",
+    "body": "if ${1:condition} {\n\t$0\n}",
+    "description": "If conditional statement"
+  },
+  "If-Else Statement": {
+    "prefix": "ifelse",
+    "body": "if ${1:condition} {\n\t$2\n} else {\n\t$0\n}",
+    "description": "If-else conditional statement"
+  },
+  "If-Elif-Else Statement": {
+    "prefix": "ifelif",
+    "body": "if ${1:condition1} {\n\t$2\n} elif ${3:condition2} {\n\t$4\n} else {\n\t$0\n}",
+    "description": "If-elif-else conditional statement"
+  },
+  "Match Expression": {
+    "prefix": "match",
+    "body": "match ${1:expr} {\n\t${2:pattern} => ${3:value},\n\t_ => ${4:default},\n}",
+    "description": "Match expression (pattern matching)"
+  },
+  "Class Definition": {
+    "prefix": "class",
+    "body": "class ${1:ClassName} {\n\tfn __init__(self${2:, args}) {\n\t\t$0\n\t}\n}",
+    "description": "Define a new class"
+  },
+  "Struct Definition": {
+    "prefix": "struct",
+    "body": "struct ${1:StructName} {\n\t${2:field1}: ${3:type1},\n\t${4:field2}: ${5:type2},\n}",
+    "description": "Define a new struct"
+  },
+  "Enum Definition": {
+    "prefix": "enum",
+    "body": "enum ${1:EnumName} {\n\t${2:Variant1},\n\t${3:Variant2}(${4:data}),\n}",
+    "description": "Define a new enum"
+  },
+  "Module Definition": {
+    "prefix": "module",
+    "body": "module ${1:module_name} {\n\t$0\n}",
+    "description": "Define a new module"
+  },
+  "Import Statement": {
+    "prefix": "import",
+    "body": "import ${1:module_name}",
+    "description": "Import a module"
+  },
+  "Import with Alias": {
+    "prefix": "importas",
+    "body": "import ${1:module_name} as ${2:alias}",
+    "description": "Import a module with alias"
+  },
+  "Try-Catch": {
+    "prefix": "try",
+    "body": "try {\n\t$1\n} catch ${2:error} {\n\t$0\n}",
+    "description": "Try-catch exception handling"
+  },
+  "Print": {
+    "prefix": "print",
+    "body": "print(${1:message})",
+    "description": "Print to console"
+  },
+  "Println": {
+    "prefix": "println",
+    "body": "println(${1:message})",
+    "description": "Print line to console"
+  },
+  "HTTP Server": {
+    "prefix": "httpserver",
+    "body": "import http\n\nhttp.serve(${1:\":8080\"}, fn(req) {\n\tresponse.send(${2:\"Hello, World!\"})\n})",
+    "description": "Create an HTTP server"
+  },
+  "Async Function": {
+    "prefix": "async",
+    "body": "async fn ${1:function_name}(${2:args}) {\n\t$0\n}",
+    "description": "Define an async function"
+  },
+  "Test": {
+    "prefix": "test",
+    "body": "#[test]\nfn ${1:test_name}() {\n\t$0\n}",
+    "description": "Define a test function"
+  },
+  "Benchmark": {
+    "prefix": "bench",
+    "body": "#[bench]\nfn ${1:bench_name}(b) {\n\t$0\n}",
+    "description": "Define a benchmark function"
+  },
+  "Main Function": {
+    "prefix": "main",
+    "body": "fn main() {\n\t$0\n}",
+    "description": "Define main function"
+  }
+}

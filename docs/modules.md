@@ -1,4 +1,4 @@
-## KIO Module Layout and Responsibilities
+## Axeon Module Layout and Responsibilities
 
 This document describes the **top-level runtime modules** in the current KIO implementation. These modules will be the primary integration points for the future C core.
 
@@ -30,7 +30,7 @@ This document describes the **top-level runtime modules** in the current KIO imp
   - Expose functions like `crypto.sha256(data: string) -> string`.
   - Integrate with standard library-style modules (e.g. `import "crypto"`).
 - **Initial C-core interface**:
-  - Implemented as **native functions** on top of `kio_native_fn`, reusing the C value ABI.
+  - Implemented as **native functions** on top of `axeon_native_fn`, reusing the C value ABI.
   - Future work may move hot paths (real SHA-256/AES implementations) into C for maximum portability and performance.
 
 ### Data and Database (`src/data/`, `src/database/`)

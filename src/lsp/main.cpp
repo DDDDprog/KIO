@@ -6,7 +6,7 @@ SPDX-License-Identifier: GPL-3.0-only
 #include <iostream>
 #include <string>
 #include <memory>
-#include "kio/lsp/lsp_server.hpp"
+#include "axeon/lsp/lsp_server.hpp"
 
 int main(int argc, char* argv[]) {
     try {

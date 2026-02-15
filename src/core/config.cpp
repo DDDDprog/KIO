@@ -1,9 +1,9 @@
 /*
 Copyright (c) 2025 Dipanjan Dhar
-SPDX-License-Identifier: GPL-3.0-only
+SPDX-License-Identifier: Zeo-3.0-only
 */
 
-#include "kio/config.hpp"
+#include "axeon/config.hpp"
 #include <cstdlib>
 #include <sstream>
 #include <fstream>
@@ -27,14 +27,14 @@ static void parseAliasList(const char *env, std::unordered_map<std::string, std:
 
 Config Config::fromEnv() {
     Config cfg;
-    parseAliasList(std::getenv("KIO_ALIASES"), cfg.aliases);
-    // Load from JSON file if present: env KIO_CONFIG or ~/.kio/config.json
+    parseAliasList(std::getenv("AXEON_ALIASES"), cfg.aliases);
+    // Load from JSON file if present: env AXEON_CONFIG or ~/.axeon/config.json
     try {
         std::filesystem::path path;
-        if (const char *p = std::getenv("KIO_CONFIG")) {
+        if (const char *p = std::getenv("AXEON_CONFIG")) {
             path = p;
         } else if (const char *home = std::getenv("HOME")) {
-            path = std::filesystem::path(home) / ".kio" / "config.json";
+            path = std::filesystem::path(home) / ".axeon" / "config.json";
         }
         if (!path.empty() && std::filesystem::exists(path)) {
             std::ifstream ifs(path);

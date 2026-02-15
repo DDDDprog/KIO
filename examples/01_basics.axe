@@ -1,0 +1,14 @@
+// Axeon Basics: Variables and Printing
+// Variables are declared with 'let' and can be updated later.
+
+let name = "Axeon User";
+let version = 2.0;
+
+print "Welcome to " + name;
+print "Language Version:";
+print version;
+
+// Re-assignment
+version = 2.1;
+print "Updated Version:";
+print version;

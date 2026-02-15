@@ -1,0 +1,31 @@
+{
+  "iconDefinitions": {
+    "axeon-file": {
+      "iconPath": "./axeon-light.svg"
+    },
+    "axeon-file-dark": {
+      "iconPath": "./axeon-dark.svg"
+    }
+  },
+  "file": "axeon-file",
+  "file_light": "axeon-file",
+  "file_dark": "axeon-file-dark",
+  "folder": "axeon-file",
+  "folder_light": "axeon-file",
+  "folder_dark": "axeon-file-dark",
+  "rootFolder": "axeon-file",
+  "rootFolder_light": "axeon-file",
+  "rootFolder_dark": "axeon-file-dark",
+  "languageIds": {
+    "axeon": "axeon-file"
+  },
+  "fileExtensions": {
+    "axe": "axeon-file",
+    "ko": "axeon-file"
+  },
+  "fileNames": {},
+  "associations": {
+    "*.axe": "axeon-file",
+    "*.ko": "axeon-file"
+  }
+}

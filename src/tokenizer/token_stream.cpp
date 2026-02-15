@@ -3,8 +3,8 @@ Copyright (c) 2025 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/token_stream.hpp"
-#include "kio/token.hpp"
+#include "axeon/token_stream.hpp"
+#include "axeon/token.hpp"
 #include <stdexcept>
 
 namespace kio {

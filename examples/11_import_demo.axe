@@ -1,0 +1,7 @@
+// Axeon Imports: Modularizing code
+import "lib_constants.axe";
+
+print "Imported constants:";
+print "PI: " + PI;
+print "E: " + E;
+print "APP_NAME: " + APP_NAME;

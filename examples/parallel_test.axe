@@ -1,0 +1,18 @@
+// Axeon Parallel Execution Test
+print "--- Axeon Parallel Test ---";
+
+let sum = 0;
+let i = 0;
+
+let start = sys "time";
+
+while (i < 1000000) {
+    sum = sum + i;
+    i = i + 1;
+}
+
+let end = sys "time";
+
+print "Sum: " + sum;
+print "Time: " + (end - start) + "ms";
+print "Parallel execution completed!";

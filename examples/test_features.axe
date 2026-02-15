@@ -1,0 +1,9 @@
+// Axeon Feature Test
+let x = 10;
+let y = 20;
+
+print "Testing features...";
+print x + y;
+print x - y;
+print x y;
+print x * / y;

@@ -1,0 +1,15 @@
+// Axeon Strings: Concatenation and Literal usage
+
+let greeting = "Hello";
+let target = "World";
+
+// Basic concatenation
+let message = greeting + " " + target + "!";
+print message;
+
+// Multiple concatenations in print
+print "Axeon is " + "awesome " + "and " + "fast.";
+
+// Numeric values are converted to strings when added to strings
+let year = 2025;
+print "The year is " + year;

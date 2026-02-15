@@ -1,0 +1,18 @@
+// Axeon Type Annotations and Constants
+
+const MAX_SIZE = 100;
+const PI_VALUE = 3.14159;
+
+let x = 10;
+let y = 20;
+
+// Type-like annotations (syntax demo)
+let:num count = 5;
+let:str name = "Axeon";
+
+print "Advanced Syntax Demo";
+print "Max Size: " + MAX_SIZE;
+print "PI: " + PI_VALUE;
+print "x + y = " + (x + y);
+print "Count: " + count;
+print "Name: " + name;

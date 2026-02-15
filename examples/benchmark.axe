@@ -1,0 +1,22 @@
+// Axeon Performance Benchmark
+// Objective: Perform 1,000,000 iterations of arithmetic and a conditional.
+
+let iterations = 1000000;
+let sum = 0;
+let i = 0;
+
+let start = sys "time";
+
+while (i < iterations) {
+    sum = sum + i * 2 + 1;
+    if (i % 1000 == 0) {
+        sum = sum - 1;
+    }
+    i = i + 1;
+}
+
+let end = sys "time";
+print "--- Axeon Benchmark Results ---";
+print "Iterations: 1,000,000";
+print "Final Sum: " + sum;
+print "Time (ms): " + (end - start);

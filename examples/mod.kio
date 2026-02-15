@@ -1,2 +1,0 @@
-let greeting = "hello from module";
-print greeting;

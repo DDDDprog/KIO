@@ -2,7 +2,7 @@ import os
 import subprocess
 import time
 
-KIO_BIN = "./build/kio"
+AXEON_BIN = "./build/axeon"
 EXAMPLES_DIR = "examples"
 
 def run_example(filename):
@@ -30,8 +30,8 @@ def run_example(filename):
         return False, str(e)
 
 def main():
-    if not os.path.exists(KIO_BIN):
-        print(f"Error: KIO binary not found at {KIO_BIN}")
+    if not os.path.exists(AXEON_BIN):
+        print(f"Error: Axeon binary not found at {AXEON_BIN}")
         return
 
     files = [f for f in os.listdir(EXAMPLES_DIR) if f.endswith('.kio')]

@@ -3,14 +3,14 @@ Copyright (c) 2026 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/builtin_functions.hpp"
-#include "kio/bytecode.hpp"
+#include "axeon/builtin_functions.hpp"
+#include "axeon/bytecode.hpp"
 #include <iostream>
 #include <cmath>
 #include <chrono>
 #include <random>
 #include <algorithm>
-#include "kio/network/http_server.hpp"
+#include "axeon/network/http_server.hpp"
 
 namespace kio {
 

@@ -1,4 +1,4 @@
-# KIO Language Grammar 2.0 (2026 Edition)
+# Axeon Language Grammar 2.0 (2026 Edition)
 
 ## Lexical Structure
 
@@ -44,7 +44,7 @@ array      -> "[" ( expression ( "," expression )* )? "]" ;
 
 ## Platform Architecture
 
-KIO utilizes a High-Performance Stack-based Virtual Machine with:
+ Axeon a High-Performance Stack-based Virtual Machine with:
 - **Computed Gotos**: Optimized opcode dispatch for 30% faster execution.
 - **Mark-and-Sweep GC**: Efficient memory management for long-running processes.
 - **Parallel Executor**: Native multi-threading with `parallel` blocks.

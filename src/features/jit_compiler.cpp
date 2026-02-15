@@ -3,8 +3,8 @@ Copyright (c) 2025 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/jit_compiler.hpp"
-#include "kio/ast.hpp"
+#include "axeon/jit_compiler.hpp"
+#include "axeon/ast.hpp"
 #include <iostream>
 #include <memory>
 #include <variant>

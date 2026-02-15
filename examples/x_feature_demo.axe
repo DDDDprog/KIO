@@ -1,0 +1,28 @@
+// Axeon Feature Showcase: Crypto, GPU, GUI, Vector, and BigInt
+print "--- Axeon Advanced Features Demo ---";
+
+print "Testing Crypto Features...";
+let secret = "AXEON_SECRET_DATA";
+let key = "MY_KEY_123";
+let hash = crypto_sha256(secret);
+print "SHA256: " + hash;
+
+print "Testing GPU Features...";
+let data = [1, 2, 3, 4, 5];
+print "Data: " + data;
+
+print "Testing GUI Features...";
+gui_window("Axeon Advanced Demo", 800, 600);
+gui_button("Click Me!");
+
+print "Testing Vector Features...";
+let v1 = [1, 2, 3];
+let v2 = [4, 5, 6];
+print "Vector 1: " + v1;
+print "Vector 2: " + v2;
+
+print "Testing BigInt Features...";
+let big = bigint "123456789012345678901234567890";
+print "BigInt: " + big;
+
+print "All features working!";

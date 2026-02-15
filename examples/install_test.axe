@@ -1,0 +1,4 @@
+print "--- Installed Axeon Test ---";
+let status = "Success";
+print "Status: " + status;
+print "Axeon is installed correctly!";

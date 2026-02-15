@@ -1,0 +1,18 @@
+{
+    let sum = 0;
+    let start = sys "time";
+    let iterations = 10000000;
+
+    let i = 0;
+    while (i < iterations) {
+        sum = sum + i * 2;
+        sum = sum - i;
+        i = i + 1;
+    }
+
+    let end = sys "time";
+    print "--- Axeon JIT Benchmark Results ---";
+    print "Iterations: " + iterations;
+    print "Final Sum: " + sum;
+    print "Total Time (ms): " + (end - start);
+}

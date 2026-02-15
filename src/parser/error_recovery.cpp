@@ -3,8 +3,8 @@ Copyright (c) 2026 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/error_recovery.hpp"
-#include "kio/token.hpp"
+#include "axeon/error_recovery.hpp"
+#include "axeon/token.hpp"
 #include <sstream>
 
 namespace kio {

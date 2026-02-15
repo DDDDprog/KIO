@@ -1,0 +1,22 @@
+// High-performance Axeon benchmark
+// Optimized for native execution
+
+let iterations = 10000000;
+let sum = 0.0;
+
+let start = sys "time";
+
+let i = 0;
+while i < iterations {
+    sum = sum + i * 2.0 + 1.0;
+    if i % 1000 == 0 {
+        sum = sum - 1.0;
+    }
+    i = i + 1;
+}
+
+let end = sys "time";
+print "--- Axeon Optimized Benchmark ---";
+print "Iterations: " + iterations;
+print "Final Sum: " + sum;
+print "Time (ms): " + (end - start);

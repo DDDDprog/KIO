@@ -1,0 +1,2 @@
+import "mod.axe";
+print "Module loaded";

@@ -1,0 +1,16 @@
+// Axeon IO: Saving and Loading variable state
+// This feature exports the environment to a JSON-like format.
+
+let name = "Axeon User";
+let age = 25;
+let score = 98.5;
+
+print "Before save:";
+print "Name: " + name;
+print "Age: " + age;
+print "Score: " + score;
+
+// Save state to file
+save "state.json";
+
+print "State saved to state.json";

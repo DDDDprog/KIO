@@ -3,8 +3,8 @@ Copyright (c) 2025 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/ast_visitor.hpp"
-#include "kio/ast.hpp"
+#include "axeon/ast_visitor.hpp"
+#include "axeon/ast.hpp"
 
 namespace kio {
 

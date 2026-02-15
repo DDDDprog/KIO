@@ -3,8 +3,8 @@ Copyright (c) 2026 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/type_system.hpp"
-#include "kio/interpreter.hpp"  // For Value definition
+#include "axeon/type_system.hpp"
+#include "axeon/interpreter.hpp"  // For Value definition
 #include <iostream>
 
 namespace kio {

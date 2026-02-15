@@ -3,8 +3,8 @@ Copyright (c) 2026 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/lsp/semantic_tokens.hpp"
-#include "kio/lexer.hpp"
+#include "axeon/lsp/semantic_tokens.hpp"
+#include "axeon/lexer.hpp"
 #include <algorithm>
 
 namespace kio::lsp {

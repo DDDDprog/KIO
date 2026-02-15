@@ -2,11 +2,11 @@
  Copyright (c) 2025 Dipanjan Dhar
  SPDX-License-Identifier: GPL-3.0-only
 
- Fast JIT Compiler for KIO
+ Fast JIT Compiler for Axeon
  Uses LLVM with aggressive optimizations
 */
 
-#include "kio/jit_engine.hpp"
+#include "axeon/jit_engine.hpp"
 #include <iostream>
 #include <chrono>
 

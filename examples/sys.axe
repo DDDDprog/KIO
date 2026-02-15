@@ -1,0 +1,2 @@
+print sys "os_name";
+print sys "cpu_model";

@@ -3,8 +3,8 @@ Copyright (c) 2025 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/optimizer.hpp"
-#include "kio/ast.hpp"
+#include "axeon/optimizer.hpp"
+#include "axeon/ast.hpp"
 #include <iostream>
 #include <algorithm>
 

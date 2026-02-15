@@ -3,7 +3,7 @@ Copyright (c) 2025 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/lsp/formatting.hpp"
+#include "axeon/lsp/formatting.hpp"
 #include <sstream>
 #include <algorithm>
 

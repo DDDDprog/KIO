@@ -5,7 +5,7 @@
  * can link successfully without pulling in LLVM or any JIT infrastructure.
  */
 
-#include "kio/jit_engine.hpp"
+#include "axeon/jit_engine.hpp"
 
 namespace kio {
 

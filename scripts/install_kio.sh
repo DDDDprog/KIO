@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# KIO Advanced Installer
-# GitHub: https://github.com/DDDDprog/KIO
-# SPDX-License-Identifier: MIT
+# Axeon Advanced Installer
+# GitHub: https://github.com/DDDDprog/Axeon
+# SPDX-License-Identifier: Zeo
 
 set -euo pipefail
 
 #########################################
 # CONFIGURATION
 #########################################
-REPO_URL="https://github.com/DDDDprog/KIO.git"
-INSTALL_DIR="/usr/local/kio"
-BUILD_DIR="$HOME/.kio_build"
+REPO_URL="https://github.com/DDDDprog/Axeon.git"
+INSTALL_DIR="/usr/local/axeon"
+BUILD_DIR="$HOME/.axeon_build"
 ENABLE_JIT="ON"
 ENABLE_PARALLEL="ON"
 ENABLE_LSP="ON"
@@ -45,7 +45,7 @@ done
 #########################################
 # CLONE OR UPDATE REPO
 #########################################
-echo_banner "Fetching KIO source code from $REPO_URL"
+echo_banner "Fetching Axeon source code from $REPO_URL"
 if [ ! -d "$BUILD_DIR" ]; then
     git clone "$REPO_URL" "$BUILD_DIR"
 else
@@ -57,33 +57,33 @@ fi
 # BACKUP OLD INSTALLATION
 #########################################
 if [ -d "$INSTALL_DIR" ]; then
-    echo_banner "Backing up old KIO installation"
+    echo_banner "Backing up old Axeon installation"
     TIMESTAMP=$(date +%Y%m%d_%H%M%S)
     mv "$INSTALL_DIR" "${INSTALL_DIR}_backup_$TIMESTAMP"
 fi
 
 #########################################
-# BUILD KIO
+# BUILD AXEON
 #########################################
-echo_banner "Configuring KIO build"
+echo_banner "Configuring Axeon build"
 mkdir -p "$BUILD_DIR/build"
 cd "$BUILD_DIR/build"
 
 cmake .. \
-    -DKIO_ENABLE_JIT=$ENABLE_JIT \
-    -DKIO_ENABLE_PARALLEL=$ENABLE_PARALLEL \
-    -DKIO_BUILD_LSP=$ENABLE_LSP \
-    -DKIO_ENABLE_FAST_MATH=$ENABLE_FAST_MATH \
-    -DKIO_ENABLE_LTO=$ENABLE_LTO \
+    -DAXEON_ENABLE_JIT=$ENABLE_JIT \
+    -DAXEON_ENABLE_PARALLEL=$ENABLE_PARALLEL \
+    -DAXEON_BUILD_LSP=$ENABLE_LSP \
+    -DAXEON_ENABLE_FAST_MATH=$ENABLE_FAST_MATH \
+    -DAXEON_ENABLE_LTO=$ENABLE_LTO \
     -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR"
 
-echo_banner "Building KIO using $NUM_CORES cores"
+echo_banner "Building Axeon using $NUM_CORES cores"
 cmake --build . -j"$NUM_CORES"
 
 #########################################
-# INSTALL KIO
+# INSTALL AXEON
 #########################################
-echo_banner "Installing KIO to $INSTALL_DIR"
+echo_banner "Installing Axeon to $INSTALL_DIR"
 cmake --install . --prefix "$INSTALL_DIR"
 
 #########################################
@@ -96,12 +96,12 @@ fi
 
 if ! grep -q "$INSTALL_DIR/bin" <<< "$PATH"; then
     echo "export PATH=\"$INSTALL_DIR/bin:\$PATH\"" >> "$SHELL_RC"
-    echo "Added KIO to PATH. Restart your shell or run 'source $SHELL_RC'."
+    echo "Added Axeon to PATH. Restart your shell or run 'source $SHELL_RC'."
 fi
 
 #########################################
 # FINAL MESSAGE
 #########################################
-echo_banner "✅ KIO installation complete!"
-echo "Run an example: kio $BUILD_DIR/examples/hello.kio"
-echo "You can now use KIO from anywhere using 'kio'"
+echo_banner "✅ Axeon installation complete!"
+echo "Run an example: axeon $BUILD_DIR/examples/hello.axe"
+echo "You can now use Axeon from anywhere using 'axeon'"

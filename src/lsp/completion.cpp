@@ -3,8 +3,8 @@ Copyright (c) 2025 Dipanjan Dhar
 SPDX-License-Identifier: GPL-3.0-only
 */
 
-#include "kio/lsp/completion.hpp"
-#include "kio/interpreter.hpp"
+#include "axeon/lsp/completion.hpp"
+#include "axeon/interpreter.hpp"
 #include <sstream>
 #include <vector>
 #include <string>
