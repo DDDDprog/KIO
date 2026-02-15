@@ -1,7 +1,62 @@
 # Axeon Programming Language
 
 <p align="center">
-  <img src="docs/image.jpg" alt="Axeon Logo" width="150"/>
+  <div class="logo-container">
+  <img src="docs/image.jpg" alt="Axeon Logo" class="axeon-logo"/>
+</div>
+
+<style>
+/* Center the logo */
+.logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+  background: radial-gradient(circle at center, #0f172a, #020617);
+}
+
+/* Glossy + Glow Effect */
+.axeon-logo {
+  width: 170px;
+  border-radius: 18px;
+
+  /* Soft shadow */
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.6),
+    0 0 25px rgba(59,130,246,0.6),
+    0 0 50px rgba(37,99,235,0.4);
+
+  /* Smooth animation */
+  transition: all 0.4s ease-in-out;
+  position: relative;
+}
+
+/* Gloss overlay */
+.axeon-logo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  background: linear-gradient(
+    120deg,
+    rgba(255,255,255,0.35) 0%,
+    rgba(255,255,255,0.08) 40%,
+    rgba(255,255,255,0) 60%
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* Hover = more glow (looks premium) */
+.axeon-logo:hover {
+  transform: scale(1.06);
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.8),
+    0 0 40px rgba(96,165,250,0.9),
+    0 0 80px rgba(59,130,246,0.7);
+}
+</style>
+
 </p>
 
 Axeon is an ultra-fast, modern, lightweight programming language designed for high-performance computation, parallel workloads, and JIT-enabled execution. It combines the simplicity of Python/JavaScript with the speed of C++/Rust.
