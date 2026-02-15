@@ -1,7 +1,7 @@
 # Axeon Programming Language
 
 <p align="center">
-  <img src="docs/image.jpg" width="100%"/>
+  <img src="docs/image.jpg" alt="Axeon Logo" width="150"/>
 </p>
 
 Axeon is an ultra-fast, modern, lightweight programming language designed for high-performance computation, parallel workloads, and JIT-enabled execution. It combines the simplicity of Python/JavaScript with the speed of C++/Rust.
