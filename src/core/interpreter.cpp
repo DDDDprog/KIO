@@ -4,6 +4,7 @@ SPDX-License-Identifier: GPL-3.0-only
 */
 
 #include "axeon/interpreter.hpp"
+#include "axeon/platform.hpp"
 #include <iostream>
 #include <stdexcept>
 #include <fstream>
@@ -126,6 +127,9 @@ Value Interpreter::evaluate(const ExprPtr &expr) {
             }
             if (node.key == "arch") return objToValue(new ObjString("x64"));
             if (node.key == "kio_version") return objToValue(new ObjString("2.1.0"));
+            if (node.key == "cpu_model") return objToValue(new ObjString(PlatformInfo::get_cpu_model()));
+            if (node.key == "mem_total_kb") return doubleToValue((double)PlatformInfo::get_total_memory());
+            if (node.key == "disk_root_kb") return doubleToValue((double)PlatformInfo::get_root_disk_space());
             return NIL_VAL;
         }
         return NIL_VAL;

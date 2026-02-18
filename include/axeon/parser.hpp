@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <string>
 #include "axeon/token.hpp"
 #include "axeon/ast.hpp"
 
@@ -12,6 +13,9 @@ class Parser {
 public:
     explicit Parser(const std::vector<Token> &tokens);
     std::vector<StmtPtr> parse();
+    
+    // Set source code for beautiful error display
+    static void setSourceForErrors(const std::string& source, const std::string& file_path = "");
 
 private:
     const std::vector<Token> tokens_;

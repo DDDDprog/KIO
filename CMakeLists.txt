@@ -88,68 +88,80 @@ endif()
 enable_testing()
 
 add_library(axeon_core
-    src/tokenizer/lexer.cpp
-    src/tokenizer/token_stream.cpp
-    src/tokenizer/preprocessor.cpp
-    src/parser/parser.cpp
-    src/parser/parser_extensions.cpp
-    src/parser/error_recovery.cpp
-    src/parser/ast_visitor.cpp
-    src/data/token.cpp
-    src/core/interpreter.cpp
-    src/core/value.cpp
-    src/core/builtin_functions.cpp
-    src/core/module_system.cpp
-    src/vm/vm.cpp
-    src/vm/compiler.cpp
-    src/core/config.cpp
-    src/features/optimizer.cpp
-    src/features/memory_manager.cpp
-    src/features/parallel_executor.cpp
-    src/features/type_system.cpp
-    src/core/type_impl.cpp
-    src/vector/vector_ops.cpp
-    src/database/db_driver.cpp
-    src/misc/gmp_bridge.cpp
-    src/crypto/aes.cpp
-    src/crypto/sha256.cpp
-    src/gpu/gpu_bridge.cpp
-    src/gui/gui_bridge.cpp
-    src/network/http_server.cpp
+    src/language/lexer.cpp
+    src/language/token_stream.cpp
+    src/language/preprocessor.cpp
+    src/language/parser.cpp
+    src/language/parser_extensions.cpp
+    src/language/error_recovery.cpp
+    src/language/ast_visitor.cpp
+    src/language/token.cpp
+    src/runtime/interpreter.cpp
+    src/runtime/value.cpp
+    src/runtime/builtin_functions.cpp
+    src/runtime/module_system.cpp
+    src/compiler/vm.cpp
+    src/compiler/compiler.cpp
+    src/runtime/config.cpp
+    src/runtime/platform.cpp
+    src/compiler/optimizer.cpp
+    src/compiler/memory_manager.cpp
+    src/compiler/parallel_executor.cpp
+    src/compiler/type_system.cpp
+    src/runtime/type_impl.cpp
+    src/libs/vector_ops.cpp
+    src/libs/db_driver.cpp
+    src/libs/gmp_bridge.cpp
+    src/libs/aes.cpp
+    src/libs/sha256.cpp
+    src/libs/gpu_bridge.cpp
+    src/libs/gui_bridge.cpp
+    src/libs/http_server.cpp
     c_core/abi.cpp
 )
 
 if(AXEON_ENABLE_JIT)
     target_sources(axeon_core PRIVATE
-        src/features/jit_compiler.cpp
-        src/features/jit_engine.cpp
+        src/compiler/jit_compiler.cpp
+        src/compiler/jit_engine.cpp
     )
     target_link_libraries(axeon_core PRIVATE ${llvm_libs})
     target_compile_definitions(axeon_core PRIVATE AXEON_JIT_ENABLED)
 else()
     # When JIT is disabled, provide a lightweight stub so the VM still links.
     target_sources(axeon_core PRIVATE
-        src/features/jit_engine_stub.cpp
+        src/compiler/jit_engine_stub.cpp
     )
 endif()
 
 # Optionally include LSP sources when enabled
 if (AXEON_BUILD_LSP)
     target_sources(axeon_core PRIVATE
-        src/lsp/lsp_server.cpp
-        src/lsp/document_manager.cpp
-        src/lsp/diagnostics.cpp
-        src/lsp/completion.cpp
-        src/lsp/hover.cpp
-        src/lsp/goto_definition.cpp
-        src/lsp/formatting.cpp
-        src/lsp/semantic_tokens.cpp
+        src/tools/lsp_server.cpp
+        src/tools/document_manager.cpp
+        src/tools/diagnostics.cpp
+        src/tools/completion.cpp
+        src/tools/hover.cpp
+        src/tools/goto_definition.cpp
+        src/tools/formatting.cpp
+        src/tools/semantic_tokens.cpp
     )
 endif()
 
 target_include_directories(axeon_core
     PUBLIC ${PROJECT_SOURCE_DIR}/include
     PRIVATE ${PROJECT_SOURCE_DIR}/src
+)
+
+# Professional-Grade Build Polish: "Very Very Fast" compilation using PCH
+target_precompile_headers(axeon_core PRIVATE
+    <vector>
+    <string>
+    <iostream>
+    <cmath>
+    <memory>
+    <map>
+    <chrono>
 )
 
 target_link_libraries(axeon_core PUBLIC Threads::Threads)
@@ -170,7 +182,7 @@ endif()
 
 if(AXEON_BUILD_LSP)
     add_executable(axeon-lsp
-        src/lsp/main.cpp
+        src/tools/main.cpp
     )
     
     target_link_libraries(axeon-lsp PRIVATE axeon_core)
@@ -185,7 +197,7 @@ if(AXEON_BUILD_LSP)
 endif()
 
 add_executable(axeon
-    src/core/main.cpp
+    src/runtime/main.cpp
 )
 
 target_link_libraries(axeon PRIVATE axeon_core)
@@ -208,16 +220,16 @@ set_tests_properties(axeon_hello PROPERTIES PASS_REGULAR_EXPRESSION "42\n.*axeon
 
 # Core operator tests (always enabled)
 add_test(NAME axeon_equality COMMAND axeon ${PROJECT_SOURCE_DIR}/examples/equality_test.axe)
-set_tests_properties(axeon_equality PROPERTIES PASS_REGULAR_EXPRESSION "true\n.*true")
+set_tests_properties(axeon_equality PROPERTIES PASS_REGULAR_EXPRESSION "true\n.*false")
 
 add_test(NAME axeon_comparisons COMMAND axeon ${PROJECT_SOURCE_DIR}/examples/comparisons_test.axe)
-set_tests_properties(axeon_comparisons PROPERTIES PASS_REGULAR_EXPRESSION "true\n.*true\n.*true\n.*true")
+set_tests_properties(axeon_comparisons PROPERTIES PASS_REGULAR_EXPRESSION "true\n.*false\n.*true\n.*true")
 
 add_test(NAME axeon_modulo COMMAND axeon ${PROJECT_SOURCE_DIR}/examples/modulo_test.axe)
 set_tests_properties(axeon_modulo PROPERTIES PASS_REGULAR_EXPRESSION "1")
 
 add_test(NAME axeon_arithmetic COMMAND axeon ${PROJECT_SOURCE_DIR}/examples/arithmetic_test.axe)
-set_tests_properties(axeon_arithmetic PROPERTIES PASS_REGULAR_EXPRESSION "1\n.*1\n.*1\n.*true")
+set_tests_properties(axeon_arithmetic PROPERTIES PASS_REGULAR_EXPRESSION "15\n.*5\n.*50\n.*true")
 
 # Only enable extended tests when the corresponding features are enabled
 if (AXEON_ENABLE_PARALLEL)

@@ -1,0 +1,34 @@
+// math.ko - Math module for Axeon
+// Usage: import math
+
+mod math {
+    // Trigonometric functions
+    fn sin(x) = __builtin_sin(x)
+    fn cos(x) = __builtin_cos(x)
+    fn tan(x) = __builtin_tan(x)
+    fn asin(x) = __builtin_asin(x)
+    fn acos(x) = __builtin_acos(x)
+    fn atan(x) = __builtin_atan(x)
+    fn atan2(y, x) = __builtin_atan2(y, x)
+    
+    // Mathematical constants
+    const PI = 3.141592653589793
+    const E = 2.718281828459045
+    const TAU = 6.283185307179586
+    
+    // Utility functions
+    fn abs(x) = __builtin_abs(x)
+    fn floor(x) = __builtin_floor(x)
+    fn ceil(x) = __builtin_ceil(x)
+    fn round(x) = __builtin_round(x)
+    fn sqrt(x) = __builtin_sqrt(x)
+    fn pow(base, exp) = __builtin_pow(base, exp)
+    fn log(x) = __builtin_log(x)
+    fn log10(x) = __builtin_log10(x)
+    fn exp(x) = __builtin_exp(x)
+    fn sign(x) = __builtin_sign(x)
+    
+    // Min/Max
+    fn min(a, b) = __builtin_min(a, b)
+    fn max(a, b) = __builtin_max(a, b)
+}

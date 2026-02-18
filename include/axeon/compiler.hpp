@@ -12,8 +12,10 @@ namespace kio {
 
 class Compiler {
 public:
-    Compiler();
-    Chunk* compile(const std::vector<StmtPtr>& statements);
+    enum class FunctionType { TYPE_FUNCTION, TYPE_SCRIPT };
+
+    Compiler(Compiler* parent = nullptr, FunctionType type = FunctionType::TYPE_SCRIPT);
+    ObjFunction* compile(const std::vector<StmtPtr>& statements);
 
 private:
     struct Local {
@@ -21,7 +23,10 @@ private:
         int depth;
     };
 
-    Chunk* chunk_;
+    Compiler* parent_;
+    ObjFunction* function_;
+    FunctionType type_;
+
     std::vector<Local> locals_;
     int scopeDepth {0};
 
@@ -40,6 +45,8 @@ private:
 
     void addLocal(const std::string& name);
     int resolveLocal(const std::string& name);
+    
+    Chunk* currentChunk() { return &function_->chunk; }
 };
 
 } // namespace kio

@@ -44,6 +44,14 @@ struct JITEngine::Impl {
         llvm::InitializeNativeTargetAsmParser();
         
         auto jit_builder = llvm::orc::LLJITBuilder();
+        
+        auto JTMB = llvm::orc::JITTargetMachineBuilder::detectHost();
+        if (JTMB) {
+            JTMB->setCodeGenOptLevel(llvm::CodeGenOptLevel::Aggressive);
+            // Use the host CPU detected by LLVM instead of the literal "native"
+            jit_builder.setJITTargetMachineBuilder(std::move(*JTMB));
+        }
+        
         jit_builder.setNumCompileThreads(0);
         
         auto jit_or_err = jit_builder.create();
@@ -55,26 +63,19 @@ struct JITEngine::Impl {
     }
 
     void optimizeModule(llvm::Module* M) {
-        // Create the analysis managers.
         LoopAnalysisManager LAM;
         FunctionAnalysisManager FAM;
         CGSCCAnalysisManager CGAM;
         ModuleAnalysisManager MAM;
-
-        // Create the new pass manager builder.
         PassBuilder PB;
 
-        // Register all the basic analyses with the managers.
         PB.registerModuleAnalyses(MAM);
         PB.registerCGSCCAnalyses(CGAM);
         PB.registerFunctionAnalyses(FAM);
         PB.registerLoopAnalyses(LAM);
         PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
 
-        // Create the pass manager with O3 optimizations.
         ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(OptimizationLevel::O3);
-
-        // Run the passes.
         MPM.run(*M, MAM);
     }
 };
@@ -94,6 +95,7 @@ JITEngine::CompiledLoop JITEngine::compileLoop(Chunk* chunk, uint8_t* startIp) {
     while (!scan_done && limit-- > 0 && scan < chunk->code.data() + chunk->code.size()) {
         OpCode op = (OpCode)(*scan);
         switch (op) {
+            case OpCode::CONSTANT: scan += 2; break;
             case OpCode::GET_LOCAL:
             case OpCode::SET_LOCAL: {
                 uint8_t slot = scan[1];
@@ -101,7 +103,10 @@ JITEngine::CompiledLoop JITEngine::compileLoop(Chunk* chunk, uint8_t* startIp) {
                 scan += 2;
                 break;
             }
-            case OpCode::CONSTANT: scan += 2; break;
+            case OpCode::GET_GLOBAL:
+            case OpCode::SET_GLOBAL:
+            case OpCode::DEFINE_GLOBAL:
+                return nullptr; // Globals NOT supported in JIT yet
             case OpCode::JUMP: 
             case OpCode::JUMP_IF_FALSE: scan += 3; break;
             case OpCode::LOOP: {
@@ -113,9 +118,15 @@ JITEngine::CompiledLoop JITEngine::compileLoop(Chunk* chunk, uint8_t* startIp) {
             case OpCode::PRINT: 
             case OpCode::HALT:
             case OpCode::SYS_QUERY:
-                return nullptr;
+            case OpCode::ARRAY_NEW:
+            case OpCode::ARRAY_GET:
+            case OpCode::ARRAY_SET:
+            case OpCode::FLOOR:
+            case OpCode::SQRT:
+                scan += 1;
+                break;
             default: 
-                scan += 1; 
+                scan += 1; // Single-byte ops (ADD, SUB, etc.)
                 break;
         }
     }
@@ -152,18 +163,19 @@ JITEngine::CompiledLoop JITEngine::compileLoop(Chunk* chunk, uint8_t* startIp) {
     llvm::Value* stackBase = F->getArg(0);
     llvm::Value* slotsOffset = F->getArg(2);
 
+    llvm::Value* stackStructPtr = builder.CreateBitCast(stackBase, llvm::PointerType::get(*impl_->context, 0));
+
     std::vector<llvm::Value*> localAllocas(max_slot + 1, nullptr);
     for (int i = 0; i <= max_slot; i++) {
         localAllocas[i] = builder.CreateAlloca(doubleTy, nullptr, "local_" + std::to_string(i));
     }
     
+    // Load initial values from stack
     for (int i = 0; i <= max_slot; i++) {
-            llvm::Value* idx = builder.CreateAdd(slotsOffset, builder.getInt32(i));
-            llvm::Value* offset = builder.CreateMul(idx, builder.getInt32(16));
-            llvm::Value* valAddr = builder.CreateInBoundsGEP(builder.getInt8Ty(), stackBase, offset);
-            llvm::Value* dataAddr = builder.CreateConstInBoundsGEP1_32(builder.getInt8Ty(), valAddr, 8);
-            llvm::Value* rawVal = builder.CreateLoad(doubleTy, dataAddr);
-            builder.CreateStore(rawVal, localAllocas[i]);
+        llvm::Value* idx = builder.CreateAdd(slotsOffset, builder.getInt32(i));
+        llvm::Value* valPtr = builder.CreateGEP(doubleTy, stackStructPtr, idx);
+        llvm::Value* rawVal = builder.CreateLoad(doubleTy, valPtr);
+        builder.CreateStore(rawVal, localAllocas[i]);
     }
 
     builder.CreateBr(loopDetailsBB);
@@ -182,10 +194,10 @@ JITEngine::CompiledLoop JITEngine::compileLoop(Chunk* chunk, uint8_t* startIp) {
             case OpCode::CONSTANT: {
                 uint8_t idx = *ip++;
                 Value v = chunk->constants[idx];
-                if (v.type == ValueType::VAL_NUMBER) {
-                    simStack.push_back(llvm::ConstantFP::get(doubleTy, v.as.number));
-                } else if (v.type == ValueType::VAL_BOOL) {
-                        simStack.push_back(llvm::ConstantFP::get(doubleTy, v.as.boolean ? 1.0 : 0.0));
+                if (isNumber(v)) {
+                    simStack.push_back(llvm::ConstantFP::get(doubleTy, valueToDouble(v)));
+                } else if (isBool(v)) {
+                     simStack.push_back(llvm::ConstantFP::get(doubleTy, (v.v == (0x7ff8000000000000 | 3)) ? 1.0 : 0.0));
                 } else return nullptr;
                 break;
             }
@@ -206,21 +218,56 @@ JITEngine::CompiledLoop JITEngine::compileLoop(Chunk* chunk, uint8_t* startIp) {
             }
             case OpCode::ADD:
             case OpCode::SUBTRACT:
-            case OpCode::MULTIPLY:
+            case OpCode::MULTIPLY: {
+                if (simStack.size() < 2) return nullptr;
+                llvm::Value* b = simStack.back(); simStack.pop_back();
+                llvm::Value* a = simStack.back(); simStack.pop_back();
+                if (op == OpCode::ADD) simStack.push_back(builder.CreateFAdd(a, b));
+                else if (op == OpCode::SUBTRACT) simStack.push_back(builder.CreateFSub(a, b));
+                else simStack.push_back(builder.CreateFMul(a, b));
+                break;
+            }
             case OpCode::DIVIDE: {
                 if (simStack.size() < 2) return nullptr;
                 llvm::Value* b = simStack.back(); simStack.pop_back();
                 llvm::Value* a = simStack.back(); simStack.pop_back();
-                llvm::Value* res = nullptr;
-                if (op == OpCode::ADD) res = builder.CreateFAdd(a, b);
-                else if (op == OpCode::SUBTRACT) res = builder.CreateFSub(a, b);
-                else if (op == OpCode::MULTIPLY) res = builder.CreateFMul(a, b);
-                else if (op == OpCode::DIVIDE) res = builder.CreateFDiv(a, b);
-                simStack.push_back(res);
+                // Optimize divide by constant
+                if (llvm::ConstantFP* CFP = llvm::dyn_cast<llvm::ConstantFP>(b)) {
+                    double val = CFP->getValueAPF().convertToDouble();
+                    if (val != 0.0) {
+                        simStack.push_back(builder.CreateFMul(a, llvm::ConstantFP::get(doubleTy, 1.0 / val)));
+                        break;
+                    }
+                }
+                simStack.push_back(builder.CreateFDiv(a, b));
+                break;
+            }
+            case OpCode::MODULO: {
+                if (simStack.size() < 2) return nullptr;
+                llvm::Value* b = simStack.back(); simStack.pop_back();
+                llvm::Value* a = simStack.back(); simStack.pop_back();
+                // a % b = a - b * floor(a / b)
+                // This is often faster than fmod call
+                llvm::Function* floorFunc = llvm::Intrinsic::getOrInsertDeclaration(M.get(), llvm::Intrinsic::floor, {doubleTy});
+                
+                llvm::Value* div;
+                // Optimization: if b is constant, use fmul by reciprocal
+                if (llvm::ConstantFP* CFP = llvm::dyn_cast<llvm::ConstantFP>(b)) {
+                    double val = CFP->getValueAPF().convertToDouble();
+                    div = builder.CreateFMul(a, llvm::ConstantFP::get(doubleTy, 1.0 / val));
+                } else {
+                    div = builder.CreateFDiv(a, b);
+                }
+                
+                llvm::Value* fl = builder.CreateCall(floorFunc, {div});
+                llvm::Value* mul = builder.CreateFMul(b, fl);
+                simStack.push_back(builder.CreateFSub(a, mul));
                 break;
             }
             case OpCode::LESS:
             case OpCode::GREATER: 
+            case OpCode::LESS_EQUAL:
+            case OpCode::GREATER_EQUAL:
             case OpCode::EQUAL: {
                     if (simStack.size() < 2) return nullptr;
                     llvm::Value* b = simStack.back(); simStack.pop_back();
@@ -228,9 +275,39 @@ JITEngine::CompiledLoop JITEngine::compileLoop(Chunk* chunk, uint8_t* startIp) {
                     llvm::Value* cmp = nullptr;
                     if (op == OpCode::LESS) cmp = builder.CreateFCmpOLT(a, b);
                     else if (op == OpCode::GREATER) cmp = builder.CreateFCmpOGT(a, b);
+                    else if (op == OpCode::LESS_EQUAL) cmp = builder.CreateFCmpOLE(a, b);
+                    else if (op == OpCode::GREATER_EQUAL) cmp = builder.CreateFCmpOGE(a, b);
                     else cmp = builder.CreateFCmpOEQ(a, b);
                     simStack.push_back(builder.CreateUIToFP(cmp, doubleTy));
                     break;
+            }
+            case OpCode::NEGATE: {
+                if (simStack.empty()) return nullptr;
+                llvm::Value* val = simStack.back(); simStack.pop_back();
+                simStack.push_back(builder.CreateFNeg(val));
+                break;
+            }
+            case OpCode::NOT: {
+                if (simStack.empty()) return nullptr;
+                llvm::Value* val = simStack.back(); simStack.pop_back();
+                // Not in KIO is: v == 0 ? 1 : 0
+                llvm::Value* isZero = builder.CreateFCmpOEQ(val, llvm::ConstantFP::get(doubleTy, 0.0));
+                simStack.push_back(builder.CreateUIToFP(isZero, doubleTy));
+                break;
+            }
+            case OpCode::FLOOR: {
+                if (simStack.empty()) return nullptr;
+                llvm::Value* val = simStack.back(); simStack.pop_back();
+                llvm::Function* floorFunc = llvm::Intrinsic::getOrInsertDeclaration(M.get(), llvm::Intrinsic::floor, {doubleTy});
+                simStack.push_back(builder.CreateCall(floorFunc, {val}));
+                break;
+            }
+            case OpCode::SQRT: {
+                if (simStack.empty()) return nullptr;
+                llvm::Value* val = simStack.back(); simStack.pop_back();
+                llvm::Function* sqrtFunc = llvm::Intrinsic::getOrInsertDeclaration(M.get(), llvm::Intrinsic::sqrt, {doubleTy});
+                simStack.push_back(builder.CreateCall(sqrtFunc, {val}));
+                break;
             }
             case OpCode::JUMP_IF_FALSE: {
                 ip += 2;
@@ -259,17 +336,10 @@ JITEngine::CompiledLoop JITEngine::compileLoop(Chunk* chunk, uint8_t* startIp) {
     builder.SetInsertPoint(exitBB);
     
     for (int i = 0; i <= max_slot; i++) {
-            llvm::Value* idx = builder.CreateAdd(slotsOffset, builder.getInt32(i));
-            llvm::Value* offset = builder.CreateMul(idx, builder.getInt32(16));
-            llvm::Value* valAddr = builder.CreateInBoundsGEP(builder.getInt8Ty(), stackBase, offset);
-            
-            llvm::Value* typeAddr = valAddr;
-            llvm::Value* typePtr = builder.CreateBitCast(typeAddr, builder.getInt32Ty()->getPointerTo());
-            builder.CreateStore(builder.getInt32((int)ValueType::VAL_NUMBER), typePtr);
-
-            llvm::Value* dataAddr = builder.CreateConstInBoundsGEP1_32(builder.getInt8Ty(), valAddr, 8);
-            llvm::Value* val = builder.CreateLoad(doubleTy, localAllocas[i]);
-            builder.CreateStore(val, dataAddr);
+        llvm::Value* idx = builder.CreateAdd(slotsOffset, builder.getInt32(i));
+        llvm::Value* valPtr = builder.CreateGEP(doubleTy, stackStructPtr, idx);
+        llvm::Value* val = builder.CreateLoad(doubleTy, localAllocas[i]);
+        builder.CreateStore(val, valPtr);
     }
     
     builder.CreateRetVoid();

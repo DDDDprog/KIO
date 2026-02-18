@@ -1,0 +1,16 @@
+// random.ko - Random module for Axeon
+// Usage: import random
+
+mod random {
+    // Generate random float between 0 and 1
+    fn random() = __builtin_rand()
+    
+    // Generate random integer between 0 and max
+    fn rand_int(max) = __builtin_rand_int(max)
+    
+    // Generate random float between 0 and max
+    fn rand_float(max) = __builtin_rand_float(max)
+    
+    // Seed the random number generator
+    fn seed(value) = nil
+}

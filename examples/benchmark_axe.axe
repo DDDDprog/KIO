@@ -10,9 +10,9 @@
         i = i + 1;
     }
 
-    let end = sys "time";
+    let endTime = sys "time";
     print "--- Axeon JIT Benchmark Results ---";
     print "Iterations: " + iterations;
     print "Final Sum: " + sum;
-    print "Total Time (ms): " + (end - start);
+    print "Total Time (ms): " + (endTime - start);
 }

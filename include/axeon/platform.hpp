@@ -49,6 +49,10 @@ struct PlatformInfo {
         }
     }
     
+    static std::string get_cpu_model();
+    static long long get_total_memory();
+    static long long get_root_disk_space();
+
     // Low-level hardware affinity (macOS Silicon optimizations)
     static void optimize_for_m1_m2() {
 #if defined(__APPLE__) && defined(__aarch64__)

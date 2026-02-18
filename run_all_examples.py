@@ -2,7 +2,7 @@ import os
 import subprocess
 import time
 
-AXEON_BIN = "./build/axeon"
+AXEON_BIN = "./dist/axeon"
 EXAMPLES_DIR = "examples"
 
 def run_example(filename):
@@ -34,7 +34,7 @@ def main():
         print(f"Error: Axeon binary not found at {AXEON_BIN}")
         return
 
-    files = [f for f in os.listdir(EXAMPLES_DIR) if f.endswith('.kio')]
+    files = [f for f in os.listdir(EXAMPLES_DIR) if f.endswith('.axe')]
     files.sort()
     
     passed = 0

@@ -38,7 +38,7 @@ bool Parser::match(std::initializer_list<TokenType> types) {
 StmtPtr Parser::declaration() {
     if (match({TokenType::LET})) return varDeclaration();
     if (match({TokenType::CONST})) return constDeclaration();
-    if (match({TokenType::FUNCTION})) return functionDeclaration();
+    if (match({TokenType::FUNCTION, TokenType::FN})) return functionDeclaration();
     if (match({TokenType::CLASS})) return classDeclaration();
     if (match({TokenType::NAMESPACE})) return namespaceDeclaration();
     if (match({TokenType::MODULE})) return moduleDeclaration();

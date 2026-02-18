@@ -9,6 +9,7 @@ SPDX-License-Identifier: Zeo-3.0-only
 #include <fstream>
 #include <regex>
 #include <filesystem>
+#include <iostream>
 
 namespace kio {
 
@@ -38,25 +39,37 @@ Config Config::fromEnv() {
         }
         if (!path.empty() && std::filesystem::exists(path)) {
             std::ifstream ifs(path);
+            if (!ifs.is_open()) {
+                std::cerr << "Error: Could not open config file: " << path << std::endl;
+                return cfg;
+            }
             std::stringstream buffer; buffer << ifs.rdbuf();
             std::string json = buffer.str();
-            // Extremely small JSON extractor for: {"aliases": {"print":"echo", "let":"var"}}
-            std::regex pairRe("\\\"aliases\\\"\\s*:\\s*\\{([^}]*)\\}");
+            
+            // Robust regex for: {"aliases": {"print":"echo", "let":"var"}}
+            // Handles whitespace around colons and braces better
+            std::regex pairRe(R"(\"aliases\"\s*:\s*\{([^}]*)\})");
             std::smatch m;
             if (std::regex_search(json, m, pairRe)) {
                 std::string body = m[1].str();
-                std::regex kvRe("\\\"([^\\\"]+)\\\"\\s*:\\s*\\\"([^\\\"]+)\\\"");
+                std::regex kvRe(R"(\"([^\"]+)\"\s*:\s*\"([^\"]+)\")");
                 auto it = std::sregex_iterator(body.begin(), body.end(), kvRe);
                 auto end = std::sregex_iterator();
                 for (; it != end; ++it) {
                     std::string key = (*it)[1].str();
                     std::string val = (*it)[2].str();
-                    if (!key.empty() && !val.empty()) cfg.aliases[key] = val;
+                    if (!key.empty() && !val.empty()) {
+                        cfg.aliases[key] = val;
+                    }
                 }
+            } else if (!json.empty()) {
+                std::cerr << "Warning: 'aliases' section not found or malformed in " << path << std::endl;
             }
         }
+    } catch (const std::exception& e) {
+        std::cerr << "Config parsing error: " << e.what() << std::endl;
     } catch (...) {
-        // Ignore config parsing errors silently for now
+        std::cerr << "Unknown error during config parsing" << std::endl;
     }
     return cfg;
 }

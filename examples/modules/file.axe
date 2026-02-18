@@ -1,0 +1,22 @@
+// file.ko - File module for Axeon
+// Usage: import file
+
+mod file {
+    // Read entire file contents
+    fn read(path) = __builtin_read_file(path)
+    
+    // Write content to file (returns true on success)
+    fn write(path, content) = __builtin_write_file(path, content)
+    
+    // Check if file exists
+    fn exists(path) = __builtin_exists(path)
+    
+    // List directory contents
+    fn list_dir(path) = __builtin_list_dir(path)
+    
+    // Delete file
+    fn remove(path) = false
+    
+    // Rename file
+    fn rename(old_path, new_path) = false
+}

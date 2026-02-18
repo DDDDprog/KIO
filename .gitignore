@@ -12,8 +12,7 @@ Thumbs.db
 *.log
 
 ## Build Artifacts (CMake)
-build/
-build_pro/
+dist/
 CMakeCache.txt
 CMakeFiles/
 CMakeScripts/

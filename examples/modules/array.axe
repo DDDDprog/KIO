@@ -1,0 +1,28 @@
+// array.ko - Array module for Axeon
+// Usage: import array
+
+mod array {
+    // Create a range from start to end
+    fn range(start, end, step) = __builtin_range(start, end, step)
+    
+    // Get sum of array elements
+    fn sum(arr) = __builtin_sum(arr)
+    
+    // Get average of array elements
+    fn avg(arr) = __builtin_avg(arr)
+    
+    // Sort array in place
+    fn sort(arr) = __builtin_sort(arr)
+    
+    // Reverse array in place
+    fn reverse(arr) = __builtin_reverse(arr)
+    
+    // Map function over array (placeholder)
+    fn map(arr, func) = arr
+    
+    // Filter array by function (placeholder)
+    fn filter(arr, func) = arr
+    
+    // Reduce array to single value (placeholder)
+    fn reduce(arr, func, initial) = initial
+}

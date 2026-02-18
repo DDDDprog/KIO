@@ -8,68 +8,57 @@ SPDX-License-Identifier: GPL-3.0-only
 
 namespace kio {
 
-Value::Value() : type(ValueType::VAL_NIL) {
-    as.obj = nullptr;
+Value::Value(double n) {
+    union { uint64_t u; double d; } cast;
+    cast.d = n;
+    v = cast.u;
 }
 
-Value::Value(double n) : type(ValueType::VAL_NUMBER) {
-    as.number = n;
+Value::Value(const std::string& s) {
+    Obj* o = new ObjString(s);
+    v = (uint64_t)(0x8000000000000000 | 0x7ff8000000000000 | (uintptr_t)o);
 }
 
-Value::Value(bool b) : type(ValueType::VAL_BOOL) {
-    as.boolean = b;
-}
-
-Value::Value(Obj* o) : type(ValueType::VAL_OBJ) {
-    as.obj = o;
-}
-
-Value::Value(const std::string& s) : type(ValueType::VAL_OBJ) {
-    as.obj = new ObjString(s);
-}
-
-Value::Value(const char* s) : type(ValueType::VAL_OBJ) {
-    as.obj = new ObjString(std::string(s));
+Value::Value(const char* s) {
+    Obj* o = new ObjString(std::string(s));
+    v = (uint64_t)(0x8000000000000000 | 0x7ff8000000000000 | (uintptr_t)o);
 }
 
 double Value::toNumber() const {
-    if (type == ValueType::VAL_NUMBER) return as.number;
-    if (type == ValueType::VAL_BOOL) return as.boolean ? 1.0 : 0.0;
+    if (isNumber(*this)) return valueToDouble(*this);
+    if (isBool(*this)) return (v == (0x7ff8000000000000 | 3)) ? 1.0 : 0.0;
     return 0.0;
 }
 
 std::string Value::toString() const {
-    switch (type) {
-        case ValueType::VAL_NIL:    return "nil";
-        case ValueType::VAL_BOOL:   return as.boolean ? "true" : "false";
-        case ValueType::VAL_NUMBER: {
-            char buf[64];
-            snprintf(buf, sizeof(buf), "%.15g", as.number);
-            return std::string(buf);
-        }
-        case ValueType::VAL_OBJ: {
-            if (!as.obj) return "nil";
-            if (as.obj->type == ObjType::OBJ_STRING) return ((ObjString*)as.obj)->chars;
-            if (as.obj->type == ObjType::OBJ_ARRAY) return "[Array]";
-            return "[Object]";
-        }
+    if (isNumber(*this)) {
+        char buf[64];
+        snprintf(buf, sizeof(buf), "%.15g", valueToDouble(*this));
+        return std::string(buf);
     }
-    return "";
+    if (isNil(*this)) return "nil";
+    if (isBool(*this)) return (v == (0x7ff8000000000000 | 3)) ? "true" : "false";
+    if (isObj(*this)) {
+        Obj* o = valueToObj(*this);
+        if (!o) return "nil";
+        if (o->type == ObjType::OBJ_STRING) return ((ObjString*)o)->chars;
+        if (o->type == ObjType::OBJ_ARRAY) return "[Array]";
+        if (o->type == ObjType::OBJ_FUNCTION) return "<fn " + ((ObjFunction*)o)->name + ">";
+        if (o->type == ObjType::OBJ_CLASS) return "<class " + ((ObjClass*)o)->name + ">";
+        if (o->type == ObjType::OBJ_INSTANCE) return "<instance of " + ((ObjInstance*)o)->klass->name + ">";
+        return "[Object]";
+    }
+    return "unknown";
 }
 
 bool Value::operator==(const Value& other) const {
-    if (type != other.type) return false;
-    switch (type) {
-        case ValueType::VAL_NIL:    return true;
-        case ValueType::VAL_BOOL:   return as.boolean == other.as.boolean;
-        case ValueType::VAL_NUMBER: return as.number == other.as.number;
-        case ValueType::VAL_OBJ: {
-            if (as.obj == other.as.obj) return true;
-            if (!as.obj || !other.as.obj) return false;
-            if (as.obj->type == ObjType::OBJ_STRING && other.as.obj->type == ObjType::OBJ_STRING) {
-                return ((ObjString*)as.obj)->chars == ((ObjString*)other.as.obj)->chars;
-            }
-            return false;
+    if (v == other.v) return true;
+    if (isObj(*this) && isObj(other)) {
+        Obj* o1 = valueToObj(*this);
+        Obj* o2 = valueToObj(other);
+        if (!o1 || !o2) return o1 == o2;
+        if (o1->type == ObjType::OBJ_STRING && o2->type == ObjType::OBJ_STRING) {
+            return ((ObjString*)o1)->chars == ((ObjString*)o2)->chars;
         }
     }
     return false;

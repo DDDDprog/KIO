@@ -14,9 +14,9 @@ SPDX-License-Identifier: GPL-3.0-only
 namespace kio {
 
 struct CallFrame {
+    ObjFunction* function;
     uint8_t* ip;
-    Chunk* chunk;
-    int slots; // Offset into stack
+    int slots; // Base pointer (offset into stack)
 };
 
 enum class InterpretResult {
@@ -30,7 +30,7 @@ public:
     VM();
     ~VM();
 
-    InterpretResult interpret(Chunk* chunk);
+    InterpretResult interpret(ObjFunction* function);
     void push(Value value);
     Value pop();
 
@@ -51,7 +51,13 @@ private:
 
     InterpretResult run();
     bool isTruthy(Value v);
-
+    std::string valToString(Value v);
+    
+    bool callValue(Value callee, int argCount);
+    bool call(ObjFunction* function, int argCount);
+    bool invoke(const std::string& name, int argCount);
+    bool bindMethod(ObjClass* klass, const std::string& name);
+    
     std::unordered_map<uint8_t*, int> loop_hits_;
     static constexpr int HOT_THRESHOLD = 100;
 };

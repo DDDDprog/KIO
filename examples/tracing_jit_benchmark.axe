@@ -12,9 +12,9 @@ while (i < iterations) {
     i = i + 1;
 }
 
-let end = sys "time";
+let endTime = sys "time";
 
 print "Iterations: " + iterations;
 print "Final Sum: " + sum;
-print "Time (ms): " + (end - start);
+print "Time (ms): " + (endTime - start);
 print "JIT Benchmark complete!";

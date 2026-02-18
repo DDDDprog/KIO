@@ -19,6 +19,33 @@
     "Snippets"
   ],
   "contributes": {
+    "debuggers": [
+      {
+        "type": "axeon",
+        "label": "Axeon Debugger",
+        "languages": ["axeon"],
+        "configurationAttributes": {
+          "launch": {
+            "required": ["program"],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Path to the Axeon program to debug"
+              },
+              "args": {
+                "type": "array",
+                "description": "Command line arguments"
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "default": true,
+                "description": "Stop on entry"
+              }
+            }
+          }
+        }
+      }
+    ],
     "languages": [
       {
         "id": "axeon",
@@ -35,8 +62,8 @@
           "*.ko"
         ],
         "icon": {
-          "light": "icons/axeon-light.svg",
-          "dark": "icons/axeon-dark.svg"
+          "light": "icon.jpg",
+          "dark": "icon.jpg"
         },
         "configuration": "./language-configuration.json"
       }
@@ -80,6 +107,21 @@
           ],
           "default": "off",
           "description": "Traces the communication between VS Code and the language server."
+        },
+        "axeon.enableDebug": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable debugging support"
+        },
+        "axeon.enableRepl": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable in-editor REPL"
+        },
+        "axeon.autoFormat": {
+          "type": "boolean",
+          "default": true,
+          "description": "Auto-format code on save"
         }
       }
     },
@@ -87,6 +129,28 @@
       {
         "language": "axeon",
         "path": "./snippets/axeon.json"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "axeon.runFile",
+        "key": "F5",
+        "when": "editorLangId == axeon"
+      },
+      {
+        "command": "axeon.startRepl",
+        "key": "Alt+Shift+R",
+        "when": "editorLangId == axeon"
+      },
+      {
+        "command": "axeon.formatDocument",
+        "key": "Shift+Alt+F",
+        "when": "editorLangId == axeon"
+      },
+      {
+        "command": "axeon.renameSymbol",
+        "key": "F2",
+        "when": "editorLangId == axeon"
       }
     ]
   },

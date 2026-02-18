@@ -41,32 +41,26 @@ using namespace kio;
 
 static kio_value to_c_value(const Value& v) {
     kio_value out{};
-    switch (v.type) {
-        case ValueType::VAL_NIL:
-            out.type = AXEON_VAL_NIL;
-            out.as.number = 0.0;
-            out.as.boolean = 0;
-            out.as.obj = nullptr;
-            break;
-        case ValueType::VAL_BOOL:
-            out.type = AXEON_VAL_BOOL;
-            out.as.boolean = v.as.boolean ? 1 : 0;
-            out.as.number = 0.0;
-            out.as.obj = nullptr;
-            break;
-        case ValueType::VAL_NUMBER:
-            out.type = AXEON_VAL_NUMBER;
-            out.as.number = v.as.number;
-            out.as.boolean = 0;
-            out.as.obj = nullptr;
-            break;
-        case ValueType::VAL_OBJ:
-            // Object interop is not yet surfaced through the C ABI.
-            out.type = AXEON_VAL_OBJ;
-            out.as.obj = nullptr;
-            out.as.number = 0.0;
-            out.as.boolean = 0;
-            break;
+    if (isNil(v)) {
+        out.type = AXEON_VAL_NIL;
+        out.as.number = 0.0;
+        out.as.boolean = 0;
+        out.as.obj = nullptr;
+    } else if (isBool(v)) {
+        out.type = AXEON_VAL_BOOL;
+        out.as.boolean = (v.v == (0x7ff8000000000000 | 3)) ? 1 : 0;
+        out.as.number = 0.0;
+        out.as.obj = nullptr;
+    } else if (isNumber(v)) {
+        out.type = AXEON_VAL_NUMBER;
+        out.as.number = valueToDouble(v);
+        out.as.boolean = 0;
+        out.as.obj = nullptr;
+    } else if (isObj(v)) {
+        out.type = AXEON_VAL_OBJ;
+        out.as.obj = nullptr;
+        out.as.number = 0.0;
+        out.as.boolean = 0;
     }
     return out;
 }
@@ -217,8 +211,16 @@ kio_status kio_vm_execute(kio_vm*          vm,
                           kio_error*       out_error) {
     if (!vm || !chunk) return AXEON_STATUS_INVALID_ARGUMENT;
 
-    InterpretResult r = vm->vm.interpret(const_cast<Chunk*>(&chunk->chunk));
+    ObjFunction func;
+    func.name = "c_bridge";
+    func.chunk = chunk->chunk;
+
+    InterpretResult r = vm->vm.interpret(&func);
     kio_status status = from_interpret_result(r);
+
+    // Ensure we don't accidentally delete the chunk inside ObjFunction's destructor
+    // if it were a pointer, but here it's a value copy of structure.
+    // Actually, Chunk has vectors, so copying is fine.
 
     if (out_result) {
         // The current VM does not expose a "last value" result; return nil.

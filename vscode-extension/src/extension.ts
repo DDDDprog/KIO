@@ -2,6 +2,11 @@ import * as vscode from 'vscode';
 import { LanguageClient, LanguageClientOptions, ServerOptions, TransportKind } from 'vscode-languageclient/node';
 import { activateColorProvider } from './colorProvider';
 import { activateCompletionProvider } from './completionProvider';
+import { activateFormattingProvider } from './formattingProvider';
+import { activateRefactoringProvider } from './refactoringProvider';
+import { activateReplProvider } from './replProvider';
+import { activateLiveShareProvider } from './liveShareProvider';
+import { activateDebugProvider } from './debugProvider';
 
 let languageClient: LanguageClient | undefined;
 
@@ -46,6 +51,21 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Register completion provider
     activateCompletionProvider(context);
+
+    // Register formatting provider
+    activateFormattingProvider(context);
+
+    // Register refactoring provider
+    activateRefactoringProvider(context);
+
+    // Register REPL provider
+    activateReplProvider(context);
+
+    // Register Live Share provider
+    activateLiveShareProvider(context);
+
+    // Register debug provider
+    activateDebugProvider(context);
 
     // Register commands
     context.subscriptions.push(

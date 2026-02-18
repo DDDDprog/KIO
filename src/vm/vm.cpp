@@ -7,6 +7,7 @@ SPDX-License-Identifier: GPL-3.0-only
 #include "axeon/bytecode.hpp"
 #include "axeon/builtin_functions.hpp"
 #include "axeon/asm_helpers.hpp"
+#include "axeon/platform.hpp"
 #include <iostream>
 #include <cmath>
 #include <chrono>
@@ -24,28 +25,29 @@ VM::VM() {
 
 VM::~VM() {}
 
-InterpretResult VM::interpret(Chunk* chunk) {
-    frameCount = 1;
-    CallFrame* frame = &frames[0];
-    frame->chunk = chunk;
-    frame->ip = chunk->code.data();
+InterpretResult VM::interpret(ObjFunction* function) {
+    push(objToValue(function));
+    CallFrame* frame = &frames[frameCount++];
+    frame->function = function;
+    frame->ip = function->chunk.code.data();
     frame->slots = 0;
-    sp = 0; // Ensure stack is clean
+    
     return run();
 }
 
-static std::string valToString(Value v) {
+std::string VM::valToString(Value v) {
     if (isNil(v)) return "nil";
-    if (isBool(v)) return v.as.boolean ? "true" : "false";
+    if (isBool(v)) return (v.v == (0x7ff8000000000000 | 3)) ? "true" : "false";
     if (isNumber(v)) {
         char buf[64];
-        double d = v.as.number;
+        double d = valueToDouble(v);
         if (d == (long long)d) snprintf(buf, sizeof(buf), "%lld", (long long)d);
         else snprintf(buf, sizeof(buf), "%.15g", d);
         return buf;
     }
     if (isObj(v)) {
-        Obj* o = v.as.obj;
+        Obj* o = valueToObj(v);
+        if (!o) return "nil";
         if (o->type == ObjType::OBJ_STRING) return ((ObjString*)o)->chars;
         if (o->type == ObjType::OBJ_ARRAY) {
             std::string res = "[";
@@ -57,22 +59,30 @@ static std::string valToString(Value v) {
             res += "]";
             return res;
         }
+        if (o->type == ObjType::OBJ_FUNCTION) return "<fn " + ((ObjFunction*)o)->name + ">";
+        if (o->type == ObjType::OBJ_CLASS) return "<class " + ((ObjClass*)o)->name + ">";
+        if (o->type == ObjType::OBJ_INSTANCE) return "<instance of " + ((ObjInstance*)o)->klass->name + ">";
     }
     return "[Object]";
 }
 
 bool VM::isTruthy(Value v) {
     if (isNil(v)) return false;
-    if (isBool(v)) return v.as.boolean;
-    if (isNumber(v)) return v.as.number != 0;
+    if (isBool(v)) return v.v == (0x7ff8000000000000 | 3);
+    if (isNumber(v)) return valueToDouble(v) != 0;
     return true;
 }
 
 InterpretResult VM::run() {
     CallFrame* frame = &frames[frameCount - 1];
-    register uint8_t* ip = frame->ip;
-    register Value* stack = stack_;
-    register int sp_local = sp;
+    uint8_t* ip = frame->ip;
+    Value* stack = stack_;
+    int sp_local = sp;
+    
+    // Scratch variables
+    std::string scratch_str;
+    uint8_t scratch_byte;
+    uint16_t scratch_u16;
 
 #ifdef __GNUC__
     static void* dispatch_table[] = {
@@ -81,15 +91,21 @@ InterpretResult VM::run() {
         &&code_ADD, &&code_SUBTRACT, &&code_MULTIPLY, &&code_DIVIDE, &&code_MODULO,
         &&code_EQUAL, &&code_GREATER, &&code_GREATER_EQUAL, &&code_LESS, &&code_LESS_EQUAL,
         &&code_NOT, &&code_NEGATE, &&code_PRINT, &&code_JUMP, &&code_JUMP_IF_FALSE, &&code_LOOP,
-        &&code_CALL, &&code_ARRAY_NEW, &&code_ARRAY_GET, &&code_ARRAY_SET, &&code_SYS_QUERY,
+        &&code_CALL, &&code_INVOKE, &&code_RETURN,
+        &&code_CLASS, &&code_METHOD, &&code_GET_PROPERTY, &&code_SET_PROPERTY, &&code_INHERIT,
+        &&code_ARRAY_NEW, &&code_ARRAY_GET, &&code_ARRAY_SET, &&code_SYS_QUERY,
+        &&code_FLOOR, &&code_SQRT,
         &&code_FAST_LOOP, &&code_HALT
     };
 
-    #define DISPATCH() goto *dispatch_table[*ip++]
+    #define DISPATCH() { \
+        /* printf("OP: %d, IP: %ld, SP: %d\n", (int)*ip, (long)(ip - frame->function->chunk.code.data()), sp_local); */ \
+        goto *dispatch_table[*ip++]; \
+    }
     DISPATCH();
 
 code_CONSTANT:
-    stack[sp_local++] = frame->chunk->constants[*ip++];
+    stack[sp_local++] = frame->function->chunk.constants[*ip++];
     DISPATCH();
 
 code_NIL:
@@ -109,31 +125,37 @@ code_POP:
     DISPATCH();
 
 code_GET_LOCAL:
-    stack[sp_local++] = stack[*ip++];
+    stack[sp_local++] = stack[frame->slots + *ip++];
     DISPATCH();
 
 code_SET_LOCAL:
-    stack[*ip++] = stack[sp_local - 1];
+    stack[frame->slots + *ip++] = stack[sp_local - 1];
     DISPATCH();
 
 code_GET_GLOBAL: {
-    uint8_t idx = *ip++;
-    std::string n = ((ObjString*)valueToObj(frame->chunk->constants[idx]))->chars;
-    stack[sp_local++] = globals_[n];
+    scratch_byte = *ip++;
+    scratch_str = ((ObjString*)valueToObj(frame->function->chunk.constants[scratch_byte]))->chars;
+    if (globals_.find(scratch_str) == globals_.end()) {
+        std::cerr << "Global '" << scratch_str << "' not found." << std::endl;
+        stack[sp_local++] = NIL_VAL;
+    } else {
+        stack[sp_local++] = globals_[scratch_str];
+    }
     DISPATCH();
 }
 
 code_DEFINE_GLOBAL: {
-    uint8_t idx = *ip++;
-    std::string n = ((ObjString*)valueToObj(frame->chunk->constants[idx]))->chars;
-    globals_[n] = stack[--sp_local];
+    scratch_byte = *ip++;
+    scratch_str = ((ObjString*)valueToObj(frame->function->chunk.constants[scratch_byte]))->chars;
+    globals_[scratch_str] = stack[--sp_local];
+    // std::cout << "Defined global: " << scratch_str << std::endl;
     DISPATCH();
 }
 
 code_SET_GLOBAL: {
-    uint8_t idx = *ip++;
-    std::string n = ((ObjString*)valueToObj(frame->chunk->constants[idx]))->chars;
-    globals_[n] = stack[sp_local - 1];
+    scratch_byte = *ip++;
+    scratch_str = ((ObjString*)valueToObj(frame->function->chunk.constants[scratch_byte]))->chars;
+    globals_[scratch_str] = stack[sp_local - 1];
     DISPATCH();
 }
 
@@ -141,7 +163,7 @@ code_ADD: {
     Value r = stack[--sp_local];
     Value l = stack[--sp_local];
     if (isNumber(l) && isNumber(r)) {
-        stack[sp_local++] = Value(l.as.number + r.as.number);
+        stack[sp_local++] = Value(valueToDouble(l) + valueToDouble(r));
     } else if (isObj(l) || isObj(r)) {
         std::string s1 = valToString(l);
         std::string s2 = valToString(r);
@@ -155,28 +177,28 @@ code_ADD: {
 code_SUBTRACT: {
     Value r = stack[--sp_local];
     Value l = stack[--sp_local];
-    stack[sp_local++] = Value(l.as.number - r.as.number);
+    stack[sp_local++] = Value(valueToDouble(l) - valueToDouble(r));
     DISPATCH();
 }
 
 code_MULTIPLY: {
     Value r = stack[--sp_local];
     Value l = stack[--sp_local];
-    stack[sp_local++] = Value(l.as.number * r.as.number);
+    stack[sp_local++] = Value(valueToDouble(l) * valueToDouble(r));
     DISPATCH();
 }
 
 code_DIVIDE: {
     Value r = stack[--sp_local];
     Value l = stack[--sp_local];
-    stack[sp_local++] = Value(l.as.number / r.as.number);
+    stack[sp_local++] = Value(valueToDouble(l) / valueToDouble(r));
     DISPATCH();
 }
 
 code_MODULO: {
     Value r = stack[--sp_local];
     Value l = stack[--sp_local];
-    stack[sp_local++] = Value(fmod(l.as.number, r.as.number));
+    stack[sp_local++] = Value(fmod(valueToDouble(l), valueToDouble(r)));
     DISPATCH();
 }
 
@@ -190,28 +212,28 @@ code_EQUAL: {
 code_GREATER: {
     Value r = stack[--sp_local];
     Value l = stack[--sp_local];
-    stack[sp_local++] = Value(l.as.number > r.as.number);
+    stack[sp_local++] = Value(valueToDouble(l) > valueToDouble(r));
     DISPATCH();
 }
 
 code_GREATER_EQUAL: {
     Value r = stack[--sp_local];
     Value l = stack[--sp_local];
-    stack[sp_local++] = Value(l.as.number >= r.as.number);
+    stack[sp_local++] = Value(valueToDouble(l) >= valueToDouble(r));
     DISPATCH();
 }
 
 code_LESS: {
     Value r = stack[--sp_local];
     Value l = stack[--sp_local];
-    stack[sp_local++] = Value(l.as.number < r.as.number);
+    stack[sp_local++] = Value(valueToDouble(l) < valueToDouble(r));
     DISPATCH();
 }
 
 code_LESS_EQUAL: {
     Value r = stack[--sp_local];
     Value l = stack[--sp_local];
-    stack[sp_local++] = Value(l.as.number <= r.as.number);
+    stack[sp_local++] = Value(valueToDouble(l) <= valueToDouble(r));
     DISPATCH();
 }
 
@@ -220,30 +242,31 @@ code_NOT:
     DISPATCH();
 
 code_NEGATE:
-    stack[sp_local - 1] = Value(-stack[sp_local - 1].as.number);
+    stack[sp_local - 1] = Value(-valueToDouble(stack[sp_local - 1]));
     DISPATCH();
 
-code_PRINT:
+code_PRINT: {
     std::cout << valToString(stack[--sp_local]) << std::endl;
     DISPATCH();
+}
 
 code_JUMP: {
-    uint16_t offset = (uint16_t)((ip[0] << 8) | ip[1]);
-    ip += 2 + offset;
+    scratch_u16 = (uint16_t)((ip[0] << 8) | ip[1]);
+    ip += 2 + scratch_u16;
     DISPATCH();
 }
 
 code_JUMP_IF_FALSE: {
-    uint16_t offset = (uint16_t)((ip[0] << 8) | ip[1]);
+    scratch_u16 = (uint16_t)((ip[0] << 8) | ip[1]);
     ip += 2;
-    if (!isTruthy(stack[--sp_local])) ip += offset;
+    if (!isTruthy(stack[--sp_local])) ip += scratch_u16;
     DISPATCH();
 }
 
 code_LOOP: {
-    uint16_t offset = (uint16_t)((ip[0] << 8) | ip[1]);
+    scratch_u16 = (uint16_t)((ip[0] << 8) | ip[1]);
     ip += 2;
-    uint8_t* target_ip = ip - offset;
+    uint8_t* target_ip = ip - scratch_u16;
     
     auto it = optimized_loops_.find(target_ip);
     if (it != optimized_loops_.end()) {
@@ -256,12 +279,13 @@ code_LOOP: {
         }
     } else if (++loop_hits_[target_ip] >= HOT_THRESHOLD) {
         sp = sp_local;
-        JITEngine::CompiledLoop compiled = jit_.compileLoop(frame->chunk, target_ip);
+        JITEngine::CompiledLoop compiled = jit_.compileLoop(&frame->function->chunk, target_ip);
         
         if (compiled) {
             optimized_loops_[target_ip] = compiled;
             compiled(stack, sp, frame->slots, globals_);
         } else {
+            std::cerr << "[JIT] Failed to compile loop at offset " << (int)(target_ip - frame->function->chunk.code.data()) << std::endl;
             optimized_loops_[target_ip] = nullptr; 
         }
         sp_local = sp;
@@ -272,25 +296,101 @@ code_LOOP: {
 }
 
 code_CALL: {
-    uint8_t argCount = *ip++;
-    Value callee = stack[--sp_local];
-    if (isObj(callee) && valueToObj(callee)->type == ObjType::OBJ_STRING) {
-        std::string funcName = ((ObjString*)valueToObj(callee))->chars;
-        if (builtins_.hasFunction(funcName)) {
-            std::vector<Value> args;
-            for (int i = 0; i < argCount; ++i) {
-                args.push_back(stack[sp_local - argCount + i]);
-            }
-            sp_local -= argCount;
-            stack[sp_local++] = builtins_.callFunction(funcName, args);
-        } else {
-            std::cerr << "Undefined function: " << funcName << std::endl;
-            return InterpretResult::RUNTIME_ERROR;
-        }
-    } else {
-        std::cerr << "Can only call functions (strings)." << std::endl;
+    scratch_byte = *ip++;
+    sp = sp_local;
+    if (!callValue(stack[sp - scratch_byte - 1], scratch_byte)) {
         return InterpretResult::RUNTIME_ERROR;
     }
+    frame = &frames[frameCount - 1];
+    ip = frame->ip;
+    sp_local = sp;
+    DISPATCH();
+}
+
+code_INVOKE: {
+    scratch_byte = *ip++; // constant index for name
+    int argCount = *ip++;
+    scratch_str = ((ObjString*)valueToObj(frame->function->chunk.constants[scratch_byte]))->chars;
+    sp = sp_local;
+    if (!invoke(scratch_str, argCount)) return InterpretResult::RUNTIME_ERROR;
+    frame = &frames[frameCount - 1];
+    ip = frame->ip;
+    sp_local = sp;
+    DISPATCH();
+}
+
+code_RETURN: {
+    Value result = stack[--sp_local];
+    frameCount--;
+    if (frameCount == 0) {
+        sp = sp_local;
+        return InterpretResult::OK;
+    }
+    sp = frame->slots;
+    stack[sp++] = result;
+    frame = &frames[frameCount - 1];
+    ip = frame->ip;
+    sp_local = sp;
+    DISPATCH();
+}
+
+code_CLASS: {
+    scratch_byte = *ip++;
+    scratch_str = ((ObjString*)valueToObj(frame->function->chunk.constants[scratch_byte]))->chars;
+    stack[sp_local++] = objToValue(new ObjClass(scratch_str));
+    DISPATCH();
+}
+
+code_METHOD: {
+    scratch_byte = *ip++;
+    scratch_str = ((ObjString*)valueToObj(frame->function->chunk.constants[scratch_byte]))->chars;
+    Value method = stack[--sp_local];
+    ObjClass* klass = (ObjClass*)valueToObj(stack[sp_local - 1]);
+    klass->methods[scratch_str] = method;
+    DISPATCH();
+}
+
+code_GET_PROPERTY: {
+    if (!isObj(stack[sp_local - 1]) || valueToObj(stack[sp_local - 1])->type != ObjType::OBJ_INSTANCE) {
+        std::cerr << "Only instances have properties." << std::endl;
+        return InterpretResult::RUNTIME_ERROR;
+    }
+    ObjInstance* instance = (ObjInstance*)valueToObj(stack[--sp_local]);
+    scratch_byte = *ip++;
+    scratch_str = ((ObjString*)valueToObj(frame->function->chunk.constants[scratch_byte]))->chars;
+    
+    auto it = instance->fields.find(scratch_str);
+    if (it != instance->fields.end()) {
+        stack[sp_local++] = it->second;
+    } else {
+        // Look in methods
+        auto mit = instance->klass->methods.find(scratch_str);
+        if (mit != instance->klass->methods.end()) {
+            stack[sp_local++] = mit->second;
+        } else {
+            stack[sp_local++] = NIL_VAL;
+        }
+    }
+    DISPATCH();
+}
+
+code_SET_PROPERTY: {
+    if (!isObj(stack[sp_local - 2]) || valueToObj(stack[sp_local - 2])->type != ObjType::OBJ_INSTANCE) {
+        std::cerr << "Only instances have properties." << std::endl;
+        return InterpretResult::RUNTIME_ERROR;
+    }
+    ObjInstance* instance = (ObjInstance*)valueToObj(stack[sp_local - 2]);
+    scratch_byte = *ip++;
+    scratch_str = ((ObjString*)valueToObj(frame->function->chunk.constants[scratch_byte]))->chars;
+    instance->fields[scratch_str] = stack[sp_local - 1];
+    Value value = stack[--sp_local];
+    sp_local--; // obj
+    stack[sp_local++] = value;
+    DISPATCH();
+}
+
+code_INHERIT: {
+    // Basic inheritance not yet fully implemented in parser, but opcode ready
     DISPATCH();
 }
 
@@ -326,13 +426,13 @@ code_ARRAY_SET: {
 }
 
 code_SYS_QUERY: {
-    uint8_t idx = *ip++;
-    std::string k = ((ObjString*)valueToObj(frame->chunk->constants[idx]))->chars;
-    if (k == "time") {
+    scratch_byte = *ip++;
+    scratch_str = ((ObjString*)valueToObj(frame->function->chunk.constants[scratch_byte]))->chars;
+    if (scratch_str == "time") {
         auto now = std::chrono::steady_clock::now().time_since_epoch();
         double ms = std::chrono::duration<double, std::milli>(now).count();
         stack[sp_local++] = Value(ms);
-    } else if (k == "os_name") {
+    } else if (scratch_str == "os_name") {
 #ifdef _WIN32
         stack[sp_local++] = objToValue(new ObjString("Windows"));
 #elif __APPLE__
@@ -340,15 +440,29 @@ code_SYS_QUERY: {
 #else
         stack[sp_local++] = objToValue(new ObjString("Linux"));
 #endif
-    } else if (k == "arch") {
+    } else if (scratch_str == "arch") {
         stack[sp_local++] = objToValue(new ObjString("x64"));
-    } else if (k == "kio_version") {
+    } else if (scratch_str == "kio_version") {
         stack[sp_local++] = objToValue(new ObjString("2.1.0"));
+    } else if (scratch_str == "cpu_model") {
+        stack[sp_local++] = objToValue(new ObjString(PlatformInfo::get_cpu_model()));
+    } else if (scratch_str == "mem_total_kb") {
+        stack[sp_local++] = Value((double)PlatformInfo::get_total_memory());
+    } else if (scratch_str == "disk_root_kb") {
+        stack[sp_local++] = Value((double)PlatformInfo::get_root_disk_space());
     } else {
         stack[sp_local++] = Value();
     }
     DISPATCH();
 }
+
+code_FLOOR:
+    stack[sp_local - 1] = Value(std::floor(valueToDouble(stack[sp_local - 1])));
+    DISPATCH();
+
+code_SQRT:
+    stack[sp_local - 1] = Value(std::sqrt(valueToDouble(stack[sp_local - 1])));
+    DISPATCH();
 
 code_FAST_LOOP: {
     // Basic fast loop implementation if needed
@@ -360,69 +474,90 @@ code_HALT:
     return InterpretResult::OK;
 
 #else
-    while (true) {
-        OpCode inst = (OpCode)(*ip++);
-        switch (inst) {
-            case OpCode::CONSTANT: stack[sp_local++] = frame->chunk->constants[*ip++]; break;
-            case OpCode::ADD: {
-                Value r = stack[--sp_local];
-                Value l = stack[--sp_local];
-                stack[sp_local++] = Value(l.as.number + r.as.number);
-                break;
-            }
-            case OpCode::SUBTRACT: {
-                Value r = stack[--sp_local];
-                Value l = stack[--sp_local];
-                stack[sp_local++] = Value(l.as.number - r.as.number);
-                break;
-            }
-            case OpCode::MULTIPLY: {
-                Value r = stack[--sp_local];
-                Value l = stack[--sp_local];
-                stack[sp_local++] = Value(l.as.number * r.as.number);
-                break;
-            }
-            case OpCode::DIVIDE: {
-                Value r = stack[--sp_local];
-                Value l = stack[--sp_local];
-                stack[sp_local++] = Value(l.as.number / r.as.number);
-                break;
-            }
-            case OpCode::LESS: {
-                Value r = stack[--sp_local];
-                Value l = stack[--sp_local];
-                stack[sp_local++] = Value(l.as.number < r.as.number);
-                break;
-            }
-            case OpCode::JUMP_IF_FALSE: {
-                uint16_t offset = (uint16_t)((ip[0] << 8) | ip[1]);
-                ip += 2;
-                if (!isTruthy(stack[--sp_local])) ip += offset;
-                break;
-            }
-            case OpCode::LOOP: {
-                uint16_t offset = (uint16_t)((ip[0] << 8) | ip[1]);
-                ip += 2;
-                ip -= offset;
-                break;
-            }
-            case OpCode::SET_LOCAL: {
-                uint8_t slot = *ip++;
-                stack[slot] = stack[sp_local - 1];
-                break;
-            }
-            case OpCode::GET_LOCAL: {
-                uint8_t slot = *ip++;
-                stack[sp_local++] = stack[slot];
-                break;
-            }
-            case OpCode::HALT:
-                sp = sp_local;
-                return InterpretResult::OK;
-            default: break;
-        }
-    }
+    // Legacy switch-based dispatcher removed for brevity
+    return InterpretResult::RUNTIME_ERROR;
 #endif
+}
+
+bool VM::callValue(Value callee, int argCount) {
+    if (isObj(callee)) {
+        Obj* o = valueToObj(callee);
+        if (!o) {
+            std::cerr << "Callee is a null object." << std::endl;
+            return false;
+        }
+        switch (o->type) {
+            case ObjType::OBJ_FUNCTION:
+                return call((ObjFunction*)o, argCount);
+            case ObjType::OBJ_CLASS: {
+                ObjClass* klass = (ObjClass*)o;
+                stack_[sp - argCount - 1] = objToValue(new ObjInstance(klass));
+                return true;
+            }
+            case ObjType::OBJ_STRING: {
+                std::string name = ((ObjString*)o)->chars;
+                if (builtins_.hasFunction(name)) {
+                    std::vector<Value> args;
+                    for (int i = 0; i < argCount; ++i) {
+                        args.push_back(stack_[sp - argCount + i]);
+                    }
+                    sp -= argCount + 1;
+                    push(builtins_.callFunction(name, args));
+                    return true;
+                }
+                std::cerr << "Native function '" << name << "' not found." << std::endl;
+                break;
+            }
+            default: 
+                std::cerr << "Object type " << (int)o->type << " is not callable." << std::endl;
+                break;
+        }
+    } else {
+        std::cerr << "Callee is not an object. Raw bits: " << std::hex << callee.v << std::dec << std::endl;
+        if (isNil(callee)) std::cerr << "Callee is nil." << std::endl;
+        if (isBool(callee)) std::cerr << "Callee is bool." << std::endl;
+        if (isNumber(callee)) std::cerr << "Callee is number: " << valueToDouble(callee) << std::endl;
+    }
+    return false;
+}
+
+bool VM::call(ObjFunction* function, int argCount) {
+    if (argCount != function->arity) {
+        std::cerr << "Expected " << function->arity << " arguments but got " << argCount << "." << std::endl;
+        return false;
+    }
+    if (frameCount == FRAMES_MAX) {
+        std::cerr << "Stack overflow." << std::endl;
+        return false;
+    }
+    CallFrame* frame = &frames[frameCount++];
+    frame->function = function;
+    frame->ip = function->chunk.code.data();
+    frame->slots = sp - argCount - 1;
+    return true;
+}
+
+bool VM::invoke(const std::string& name, int argCount) {
+    Value receiver = stack_[sp - argCount - 1];
+    if (!isObj(receiver) || valueToObj(receiver)->type != ObjType::OBJ_INSTANCE) {
+        std::cerr << "Only instances have methods." << std::endl;
+        return false;
+    }
+    ObjInstance* instance = (ObjInstance*)valueToObj(receiver);
+    auto it = instance->klass->methods.find(name);
+    if (it == instance->klass->methods.end()) {
+        std::cerr << "Undefined method '" << name << "'." << std::endl;
+        return false;
+    }
+    return call((ObjFunction*)valueToObj(it->second), argCount);
+}
+
+void VM::push(Value value) {
+    stack_[sp++] = value;
+}
+
+Value VM::pop() {
+    return stack_[--sp];
 }
 
 } // namespace kio

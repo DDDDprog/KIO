@@ -1,0 +1,21 @@
+// Axeon Standard Benchmark (Optimized and matching JS exactly)
+{
+    let iterations = 100000000;
+    let sum = 0;
+    let i = 0;
+
+    let start = sys "time";
+
+    while (i < iterations) {
+        // Optimized with direct 'floor' opcode
+        sum = sum + i * 2 - floor(i / 2) + (i % 3);
+        i = i + 1;
+    }
+
+    let endTime = sys "time";
+
+    print "--- Axeon Benchmark Results ---";
+    print "Iterations: " + iterations;
+    print "Final Sum: " + sum;
+    print "Time (ms): " + (endTime - start);
+}

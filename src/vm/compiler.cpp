@@ -8,22 +8,34 @@ SPDX-License-Identifier: GPL-3.0-only
 
 namespace kio {
 
-Compiler::Compiler() : chunk_(nullptr) {}
-
-Chunk* Compiler::compile(const std::vector<StmtPtr>& statements) {
-    chunk_ = new Chunk();
-    for (const auto& stmt : statements) { compileStmt(stmt); }
-    emitByte(static_cast<uint8_t>(OpCode::HALT));
-    return chunk_;
+Compiler::Compiler(Compiler* parent, FunctionType type) 
+    : parent_(parent), type_(type) {
+    function_ = new ObjFunction();
+    if (type == FunctionType::TYPE_SCRIPT) {
+        function_->name = "script";
+    }
+    
+    // Reserve stack slot 0 for function itself (or 'this')
+    locals_.push_back({"", 0});
 }
 
-void Compiler::emitByte(uint8_t byte) { chunk_->write(byte, 0); }
+ObjFunction* Compiler::compile(const std::vector<StmtPtr>& statements) {
+    for (const auto& stmt : statements) { compileStmt(stmt); }
+    emitByte(static_cast<uint8_t>(OpCode::HALT));
+    return function_;
+}
+
+void Compiler::emitByte(uint8_t byte) { currentChunk()->write(byte, 0); }
 void Compiler::emitBytes(uint8_t b1, uint8_t b2) { emitByte(b1); emitByte(b2); }
 
-int Compiler::addConstant(Value value) { return chunk_->addConstant(value); }
+int Compiler::addConstant(Value value) { return currentChunk()->addConstant(value); }
 
 void Compiler::emitConstant(Value value) {
-    emitBytes(static_cast<uint8_t>(OpCode::CONSTANT), static_cast<uint8_t>(addConstant(value)));
+    int idx = addConstant(value);
+    if (idx > 255) {
+        // Handle large constant pool if needed, but for now 255 is limit
+    }
+    emitBytes(static_cast<uint8_t>(OpCode::CONSTANT), static_cast<uint8_t>(idx));
 }
 
 void Compiler::addLocal(const std::string& name) {
@@ -53,6 +65,63 @@ void Compiler::compileStmt(const StmtPtr& stmt) {
              } else {
                  emitBytes(static_cast<uint8_t>(OpCode::DEFINE_GLOBAL), static_cast<uint8_t>(addConstant(objToValue(new ObjString(node.name)))));
              }
+        } else if constexpr (std::is_same_v<T, Stmt::Function>) {
+            Compiler sub(this, FunctionType::TYPE_FUNCTION);
+            sub.function_->name = node.name;
+            sub.function_->arity = node.params.size();
+            sub.scopeDepth++;
+            for (const auto& param : node.params) {
+                sub.addLocal(param.first);
+            }
+            for (const auto& s : node.body) {
+                sub.compileStmt(s);
+            }
+            sub.emitByte(static_cast<uint8_t>(OpCode::HALT));
+            
+            emitConstant(objToValue(sub.function_));
+            if (scopeDepth > 0) {
+                addLocal(node.name);
+            } else {
+                emitBytes(static_cast<uint8_t>(OpCode::DEFINE_GLOBAL), static_cast<uint8_t>(addConstant(objToValue(new ObjString(node.name)))));
+            }
+        } else if constexpr (std::is_same_v<T, Stmt::Return>) {
+            if (type_ == FunctionType::TYPE_SCRIPT) {
+                // Error actually, but emit halt/return nil for now
+            }
+            if (node.value) {
+                compileExpr(node.value);
+            } else {
+                emitByte(static_cast<uint8_t>(OpCode::NIL));
+            }
+            emitByte(static_cast<uint8_t>(OpCode::RETURN));
+        } else if constexpr (std::is_same_v<T, Stmt::Class>) {
+            emitBytes(static_cast<uint8_t>(OpCode::CLASS), static_cast<uint8_t>(addConstant(objToValue(new ObjString(node.name)))));
+            if (scopeDepth > 0) {
+                addLocal(node.name);
+            } else {
+                emitBytes(static_cast<uint8_t>(OpCode::DEFINE_GLOBAL), static_cast<uint8_t>(addConstant(objToValue(new ObjString(node.name)))));
+            }
+            
+            // Methods
+            for (const auto& m : node.methods) {
+                if (auto func = std::get_if<Stmt::Function>(&m->node)) {
+                    Compiler sub(this, FunctionType::TYPE_FUNCTION);
+                    sub.function_->name = func->name;
+                    sub.function_->arity = func->params.size();
+                    sub.scopeDepth++;
+                    sub.addLocal("this"); // Implicit this
+                    for (const auto& param : func->params) {
+                        sub.addLocal(param.first);
+                    }
+                    for (const auto& s : func->body) {
+                        sub.compileStmt(s);
+                    }
+                    sub.emitByte(static_cast<uint8_t>(OpCode::HALT));
+                    emitConstant(objToValue(sub.function_));
+                    emitBytes(static_cast<uint8_t>(OpCode::METHOD), static_cast<uint8_t>(addConstant(objToValue(new ObjString(func->name)))));
+                }
+            }
+            emitByte(static_cast<uint8_t>(OpCode::POP)); // Pop class name
         } else if constexpr (std::is_same_v<T, Stmt::If>) {
             compileExpr(node.condition);
             int thenJump = emitJump(OpCode::JUMP_IF_FALSE);
@@ -62,7 +131,7 @@ void Compiler::compileStmt(const StmtPtr& stmt) {
             if (node.elseBranch) compileStmt(node.elseBranch);
             patchJump(elseJump);
         } else if constexpr (std::is_same_v<T, Stmt::While>) {
-            int loopStart = chunk_->code.size();
+            int loopStart = currentChunk()->code.size();
             compileExpr(node.condition);
             int exitJump = emitJump(OpCode::JUMP_IF_FALSE);
             compileStmt(node.body);
@@ -80,65 +149,44 @@ void Compiler::compileStmt(const StmtPtr& stmt) {
             for(int i=0; i<locals_to_pop; ++i) emitByte(static_cast<uint8_t>(OpCode::POP));
         } else if constexpr (std::is_same_v<T, Stmt::ForIn>) {
             scopeDepth++;
-            
-            // Loop counter
             emitConstant(doubleToValue(0));
             addLocal(node.name);
             int loopVarSlot = locals_.size() - 1;
-            
-            // Loop limit
             compileExpr(node.iterable);
             addLocal("_limit");
             int limitVarSlot = locals_.size() - 1;
-            
-            int loopStart = chunk_->code.size();
-            
-            // counter < limit
+            int loopStart = currentChunk()->code.size();
             emitBytes(static_cast<uint8_t>(OpCode::GET_LOCAL), (uint8_t)loopVarSlot);
             emitBytes(static_cast<uint8_t>(OpCode::GET_LOCAL), (uint8_t)limitVarSlot);
             emitByte(static_cast<uint8_t>(OpCode::LESS));
-            
             int exitJump = emitJump(OpCode::JUMP_IF_FALSE);
-            
             compileStmt(node.body);
-            
-            // counter = counter + 1
             emitBytes(static_cast<uint8_t>(OpCode::GET_LOCAL), (uint8_t)loopVarSlot);
             emitConstant(doubleToValue(1));
             emitByte(static_cast<uint8_t>(OpCode::ADD));
             emitBytes(static_cast<uint8_t>(OpCode::SET_LOCAL), (uint8_t)loopVarSlot);
             emitByte(static_cast<uint8_t>(OpCode::POP));
-            
             emitLoop(loopStart);
             patchJump(exitJump);
-            
-            // Cleanup
-            locals_.pop_back(); // limit
-            locals_.pop_back(); // counter
+            locals_.pop_back(); locals_.pop_back();
             scopeDepth--;
-            emitByte(static_cast<uint8_t>(OpCode::POP));
-            emitByte(static_cast<uint8_t>(OpCode::POP));
+            emitByte(static_cast<uint8_t>(OpCode::POP)); emitByte(static_cast<uint8_t>(OpCode::POP));
         } else if constexpr (std::is_same_v<T, Stmt::For>) {
             scopeDepth++;
             if (node.initializer) compileStmt(node.initializer);
-            
-            int loopStart = chunk_->code.size();
+            int loopStart = currentChunk()->code.size();
             int exitJump = -1;
             if (node.condition) {
                 compileExpr(node.condition);
                 exitJump = emitJump(OpCode::JUMP_IF_FALSE);
             }
-            
             compileStmt(node.body);
-            
             if (node.increment) {
                 compileExpr(node.increment);
                 emitByte(static_cast<uint8_t>(OpCode::POP));
             }
-            
             emitLoop(loopStart);
             if (exitJump != -1) patchJump(exitJump);
-            
             int locals_to_pop = 0;
             while (locals_.size() > 0 && locals_.back().depth == scopeDepth) {
                 locals_to_pop++;
@@ -153,18 +201,18 @@ void Compiler::compileStmt(const StmtPtr& stmt) {
 int Compiler::emitJump(OpCode instruction) {
     emitByte(static_cast<uint8_t>(instruction));
     emitByte(0xff); emitByte(0xff);
-    return chunk_->code.size() - 2;
+    return currentChunk()->code.size() - 2;
 }
 
 void Compiler::patchJump(int offset) {
-    int jump = chunk_->code.size() - offset - 2;
-    chunk_->code[offset] = (jump >> 8) & 0xff;
-    chunk_->code[offset + 1] = jump & 0xff;
+    int jump = currentChunk()->code.size() - offset - 2;
+    currentChunk()->code[offset] = (jump >> 8) & 0xff;
+    currentChunk()->code[offset + 1] = jump & 0xff;
 }
 
 void Compiler::emitLoop(int loopStart) {
     emitByte(static_cast<uint8_t>(OpCode::LOOP));
-    int offset = chunk_->code.size() - loopStart + 2;
+    int offset = currentChunk()->code.size() - loopStart + 2;
     emitByte((offset >> 8) & 0xff);
     emitByte(offset & 0xff);
 }
@@ -179,6 +227,7 @@ void Compiler::compileExpr(const ExprPtr& expr) {
                 std::string s = std::get<std::string>(node.value);
                 if (s == "true") emitByte(static_cast<uint8_t>(OpCode::TRUE));
                 else if (s == "false") emitByte(static_cast<uint8_t>(OpCode::FALSE));
+                else if (s == "") emitByte(static_cast<uint8_t>(OpCode::NIL));
                 else emitConstant(objToValue(new ObjString(s)));
             }
         } else if constexpr (std::is_same_v<T, Expr::Binary>) {
@@ -213,11 +262,24 @@ void Compiler::compileExpr(const ExprPtr& expr) {
                 emitBytes(static_cast<uint8_t>(OpCode::SET_GLOBAL), static_cast<uint8_t>(addConstant(objToValue(new ObjString(node.name)))));
             }
         } else if constexpr (std::is_same_v<T, Expr::Call>) {
-            for (const auto& arg : node.arguments) {
-                compileExpr(arg);
+            if (std::holds_alternative<Expr::Variable>(node.callee->node)) {
+                auto& var = std::get<Expr::Variable>(node.callee->node);
+                if (var.name == "floor") { compileExpr(node.arguments[0]); emitByte(static_cast<uint8_t>(OpCode::FLOOR)); return; }
+                if (var.name == "sqrt") { compileExpr(node.arguments[0]); emitByte(static_cast<uint8_t>(OpCode::SQRT)); return; }
             }
+            for (const auto& arg : node.arguments) compileExpr(arg);
             compileExpr(node.callee);
             emitBytes(static_cast<uint8_t>(OpCode::CALL), (uint8_t)node.arguments.size());
+        } else if constexpr (std::is_same_v<T, Expr::Get>) {
+            compileExpr(node.object);
+            emitBytes(static_cast<uint8_t>(OpCode::GET_PROPERTY), static_cast<uint8_t>(addConstant(objToValue(new ObjString(node.name)))));
+        } else if constexpr (std::is_same_v<T, Expr::Set>) {
+            compileExpr(node.object);
+            compileExpr(node.value);
+            emitBytes(static_cast<uint8_t>(OpCode::SET_PROPERTY), static_cast<uint8_t>(addConstant(objToValue(new ObjString(node.name)))));
+        } else if constexpr (std::is_same_v<T, Expr::This>) {
+            int slot = resolveLocal("this");
+            if (slot != -1) emitBytes(static_cast<uint8_t>(OpCode::GET_LOCAL), (uint8_t)slot);
         } else if constexpr (std::is_same_v<T, Expr::Variable>) {
             int slot = resolveLocal(node.name);
             if (slot != -1) {
@@ -230,9 +292,7 @@ void Compiler::compileExpr(const ExprPtr& expr) {
         } else if constexpr (std::is_same_v<T, Expr::SysQuery>) {
             emitBytes(static_cast<uint8_t>(OpCode::SYS_QUERY), static_cast<uint8_t>(addConstant(objToValue(new ObjString(node.key)))));
         } else if constexpr (std::is_same_v<T, Expr::Array>) {
-            for (const auto& element : node.elements) {
-                compileExpr(element);
-            }
+            for (const auto& element : node.elements) compileExpr(element);
             emitBytes(static_cast<uint8_t>(OpCode::ARRAY_NEW), (uint8_t)node.elements.size());
         } else if constexpr (std::is_same_v<T, Expr::Index>) {
             compileExpr(node.object);

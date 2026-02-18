@@ -13,3 +13,4 @@ print "Axeon is " + "awesome " + "and " + "fast.";
 // Numeric values are converted to strings when added to strings
 let year = 2025;
 print "The year is " + year;
+

@@ -1,0 +1,14 @@
+// Simple local-only benchmark
+let start = sys "time";
+
+let sum = 0;
+let i = 0;
+
+while (i < 1000000) {
+    sum = sum + i;
+    i = i + 1;
+}
+
+let endTime = sys "time";
+print "Sum: " + sum;
+print "Time (ms): " + (endTime - start);

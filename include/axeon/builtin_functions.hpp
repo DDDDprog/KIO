@@ -51,6 +51,58 @@ public:
     static Value upper(const std::vector<Value>& args);
     static Value lower(const std::vector<Value>& args);
 
+    static Value floor_func(const std::vector<Value>& args);
+    
+    // Math functions
+    static Value sin_func(const std::vector<Value>& args);
+    static Value cos_func(const std::vector<Value>& args);
+    static Value tan_func(const std::vector<Value>& args);
+    static Value asin_func(const std::vector<Value>& args);
+    static Value acos_func(const std::vector<Value>& args);
+    static Value atan_func(const std::vector<Value>& args);
+    static Value atan2_func(const std::vector<Value>& args);
+    static Value ceil_func(const std::vector<Value>& args);
+    static Value round_func(const std::vector<Value>& args);
+    static Value log_func(const std::vector<Value>& args);
+    static Value log10_func(const std::vector<Value>& args);
+    static Value exp_func(const std::vector<Value>& args);
+    static Value sign_func(const std::vector<Value>& args);
+    
+    // Time functions
+    static Value time_func(const std::vector<Value>& args);
+    static Value sleep_func(const std::vector<Value>& args);
+    static Value timestamp_func(const std::vector<Value>& args);
+    
+    // Random functions
+    static Value rand_func(const std::vector<Value>& args);
+    static Value rand_int_func(const std::vector<Value>& args);
+    static Value rand_float_func(const std::vector<Value>& args);
+    
+    // String functions
+    static Value trim_func(const std::vector<Value>& args);
+    static Value replace_func(const std::vector<Value>& args);
+    static Value contains_func(const std::vector<Value>& args);
+    static Value startswith_func(const std::vector<Value>& args);
+    static Value endswith_func(const std::vector<Value>& args);
+    static Value split_func(const std::vector<Value>& args);
+    static Value join_func(const std::vector<Value>& args);
+    
+    // Array functions
+    static Value range_func(const std::vector<Value>& args);
+    static Value map_func(const std::vector<Value>& args);
+    static Value filter_func(const std::vector<Value>& args);
+    static Value reduce_func(const std::vector<Value>& args);
+    static Value sum_func(const std::vector<Value>& args);
+    static Value avg_func(const std::vector<Value>& args);
+    static Value sort_func(const std::vector<Value>& args);
+    static Value reverse_func(const std::vector<Value>& args);
+    
+    // File functions
+    static Value read_file_func(const std::vector<Value>& args);
+    static Value write_file_func(const std::vector<Value>& args);
+    static Value exists_func(const std::vector<Value>& args);
+    static Value list_dir_func(const std::vector<Value>& args);
+    
 private:
     std::unordered_map<std::string, BuiltinFunction> functions_;
     

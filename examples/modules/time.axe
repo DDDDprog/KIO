@@ -1,0 +1,17 @@
+// time.ko - Time module for Axeon
+// Usage: import time
+
+mod time {
+    // Get current time in seconds since epoch
+    fn now() = __builtin_time()
+    
+    // Get current timestamp in milliseconds
+    fn timestamp() = __builtin_timestamp()
+    
+    // Sleep for specified seconds
+    fn sleep(seconds) = __builtin_sleep(seconds)
+    
+    // Date/time formatting (placeholder - needs implementation)
+    fn format(format_str) = ""
+    fn datetime() = ""
+}

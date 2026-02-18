@@ -1,3 +1,0 @@
-# With env: KIO_ALIASES=print=echo,let=var
-var x = 10 + 32;
-echo x;
