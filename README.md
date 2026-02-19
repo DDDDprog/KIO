@@ -37,6 +37,48 @@ python3 build/axeon_build.py
 python3 build/axeon_build.py --clean
 ```
 
+### 2. Build for Windows
+For Windows users, you can build the Axeon executable using Visual Studio 2026:
+
+```bash
+# Clone the repository
+git clone https://github.com/DDDDprog/KIO.git
+cd KIO
+
+# Make the build script executable (Linux/Mac)
+chmod +x build_windows_vs.sh
+
+# Run the build script
+./build_windows_vs.sh
+```
+
+The script will generate a Visual Studio 2026 solution, build the project, and create `axeon_vs.exe` in the root directory. This executable can be run on Windows systems.
+
+**Alternative: Manual Visual Studio Build**
+If you prefer to use Visual Studio directly:
+
+1. Open the project in Visual Studio 2026
+2. Set the configuration to Release
+3. Build the solution
+4. The executable will be in the Release directory
+
+### 3. Run Your First Program
+Build artifacts are placed in the `dist/` directory (Linux/Mac) or as `axeon_vs.exe` (Windows).
+
+```bash
+# Run the REPL (Linux/Mac)
+./dist/axeon
+
+# Run the REPL (Windows)
+axeon_vs.exe
+
+# Run a script (Linux/Mac)
+./dist/axeon examples/hello.axe
+
+# Run a script (Windows)
+axeon_vs.exe examples/hello.axe
+```
+
 ### 2. Run Your First Program
 Build artifacts are placed in the `dist/` directory.
 
