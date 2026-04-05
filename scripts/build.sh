@@ -16,8 +16,8 @@ cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
     -DAXEON_BUILD_LSP=OFF \
-    -DAXEON_ENABLE_JIT=OFF \
-    -DAXEON_ENABLE_PARALLEL=OFF \
+    -DAXEON_ENABLE_JIT=ON \
+    -DAXEON_ENABLE_PARALLEL=ON \
     -DAXEON_ENABLE_LTO=OFF
 
 # Build with all available cores

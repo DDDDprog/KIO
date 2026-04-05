@@ -48,8 +48,8 @@ public:
     static Value substr(const std::vector<Value>& args);
     static Value split(const std::vector<Value>& args);
     static Value join(const std::vector<Value>& args);
-    static Value upper(const std::vector<Value>& args);
-    static Value lower(const std::vector<Value>& args);
+    static Value upper_func(const std::vector<Value>& args);
+    static Value lower_func(const std::vector<Value>& args);
 
     static Value floor_func(const std::vector<Value>& args);
     

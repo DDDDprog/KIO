@@ -1,0 +1,10 @@
+// File: type_test.axe
+// Axeon Types Test: Basic type operations
+
+let integer = 42;
+let decimal = 3.14159;
+let text = "hello";
+let flag = true;
+let empty = nil;
+
+print "Types test completed successfully";

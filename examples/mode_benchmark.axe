@@ -1,0 +1,43 @@
+// Simple test program to measure performance across modes
+fn loop_test() {
+    let sum = 0;
+    let i = 0;
+    while (i < 50000) {
+        sum = sum + i;
+        i = i + 1;
+    }
+    return sum;
+}
+
+print "Test 1: Simple Loop (50K iterations)";
+let start1 = sys "time";
+let result1 = loop_test();
+let end1 = sys "time";
+print result1;
+print "Time: " + (end1 - start1) + "ms";
+
+fn fibonacci(n) {
+    if (n <= 1) {
+        return n;
+    }
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+print "";
+print "Test 2: Fibonacci(18)";
+let start2 = sys "time";
+let result2 = fibonacci(18);
+let end2 = sys "time";
+print result2;
+print "Time: " + (end2 - start2) + "ms";
+
+print "";
+print "Test 3: String Concatenation";
+let start3 = sys "time";
+let str1 = "Hello";
+let str2 = " ";
+let str3 = "Axeon";
+let result3 = str1 + str2 + str3;
+let end3 = sys "time";
+print result3;
+print "Time: " + (end3 - start3) + "ms";

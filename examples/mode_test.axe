@@ -1,0 +1,26 @@
+print "=== Axeon Execution Modes Demo ===";
+print "";
+
+print "Test 1: Math Operations";
+let a = 10;
+let b = 20;
+let c = a + b * 2 - 5;
+print "Result: " + c;
+
+print "";
+print "Test 2: String Concatenation";
+let s1 = "Hello";
+let s2 = " Axeon";
+let s3 = s1 + s2;
+print s3;
+
+print "";
+print "Test 3: Array Access";
+let arr = [10, 20, 30, 40, 50];
+let first = arr[0];
+let last = arr[4];
+print "First: " + first;
+print "Last: " + last;
+
+print "";
+print "All tests completed!";

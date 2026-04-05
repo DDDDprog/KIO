@@ -158,11 +158,11 @@ void BuiltinFunctions::registerBuiltinFunctions() {
     functions_["rand_float"] = rand_float_func;
     
     // String module functions
-    functions_["upper"] = upper_func;
-    functions_["lower"] = lower_func;
-    functions_["trim"] = trim_func;
-    functions_["replace"] = replace_func;
-    functions_["contains"] = contains_func;
+    functions_["upper"] = [](const std::vector<Value>& args) { return BuiltinFunctions::upper_func(args); };
+    functions_["lower"] = [](const std::vector<Value>& args) { return BuiltinFunctions::lower_func(args); };
+    functions_["trim"] = [](const std::vector<Value>& args) { return BuiltinFunctions::trim_func(args); };
+    functions_["replace"] = [](const std::vector<Value>& args) { return BuiltinFunctions::replace_func(args); };
+    functions_["contains"] = [](const std::vector<Value>& args) { return BuiltinFunctions::contains_func(args); };
     functions_["startswith"] = startswith_func;
     functions_["endswith"] = endswith_func;
     functions_["split"] = split_func;

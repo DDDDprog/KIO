@@ -39,6 +39,9 @@ using namespace kio;
 
 // --- Value conversion helpers ----------------------------------------------
 
+// Note: Currently unused but kept for future C ABI implementation
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 static kio_value to_c_value(const Value& v) {
     kio_value out{};
     if (isNil(v)) {
@@ -64,6 +67,7 @@ static kio_value to_c_value(const Value& v) {
     }
     return out;
 }
+#pragma GCC diagnostic pop
 
 static Value to_cpp_value(const kio_value& v) {
     switch (v.type) {
